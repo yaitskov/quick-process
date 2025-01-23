@@ -20,13 +20,11 @@ genCallArgsRecord recordName l = do
 -- | generate function :: CallSpec -> [String]
 genProgArgs :: FoldrConstr l Exp => String -> Name -> HList l -> Q [Dec]
 genProgArgs fName recTypeName l = do
-  args <- sequence (hMapM (Fun progArgExpr :: Fun CallArgumentGen (Q Exp)) l)
-  pure [funSig, funDec args]
+  fBody <- [| concat . flap $(listE (hMapM (Fun progArgExpr :: Fun CallArgumentGen (Q Exp)) l)) |]
+  sig <- sigD fName' [t| $(conT recTypeName) -> [ String ] |]
+  pure [sig, FunD fName' [Clause [] (NormalB fBody) []]]
   where
     fName' = mkName fName
-    funSig = SigD fName' (AppT (AppT ArrowT (ConT recTypeName)) (AppT ListT (ConT ''String)))
-    funBody args = UInfixE (VarE 'concat) (VarE (mkName ".")) (AppE (VarE 'flap) (ListE args))
-    funDec args = FunD fName' [Clause [] (NormalB $ funBody args) []]
 
 programNameToHsIdentifier :: String -> String
 programNameToHsIdentifier pn = "CS_" <> underbarrred
