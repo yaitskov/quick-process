@@ -10,6 +10,8 @@ import System.Process.Th.CallSpec
 
 type VarStrArg = VarArg String
 
+$(genProgArgsRender "/b/mkdir7" (VarArg @String "dn71" .*. VarArg @String "dn72" .*. HNil))
+$(genProgArgsRender "/b/mkdir6" (ConstArg "-p" .*. VarArg @(Maybe Int) "dn6" .*. HNil))
 $(genProgArgsRender "/b/mkdir5" (VarArg @(Maybe Int) "dn5" .*. HNil))
 $(genProgArgsRender "/b/mkdir4" (VarArg @(Either Bool Int) "dn4" .*. HNil))
 $(genProgArgsRender "/b/mkdir" (VarArg @Bool "dn2" .*. HNil))
