@@ -1,7 +1,3 @@
-{-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE OverloadedLists #-}
-{-# LANGUAGE TemplateHaskellQuotes #-}
-
 module System.Process.Th.CallArgument where
 
 import Data.HList
@@ -44,21 +40,20 @@ class Typeable a => CallArgumentGen a where
 newtype ConstArg = ConstArg String deriving (Eq, Show, Typeable)
 instance CallArgumentGen ConstArg where
   cArgName _ = Nothing
-  progArgExpr (ConstArg c) = pure (AppE (VarE 'const) (ListE [LitE $ StringL c]))
+  progArgExpr (ConstArg c) = [| const [ $(stringE c)] |]
   fieldExpr _ = pure Nothing
 
 defaultBang :: Bang
 defaultBang = Bang NoSourceUnpackedness NoSourceStrictness
 
+nameE :: String -> Q Exp
+nameE = varE . mkName
+
 newtype VarArg a = VarArg String deriving (Eq, Show, Typeable)
 instance (Typeable a, CallArgument a) => CallArgumentGen (VarArg a) where
   cArgName (VarArg n) = Just n
-  progArgExpr (VarArg fieldName) = do
-    x <- newName "x"
-    pure $ LamE [VarP x]
-      (AppE (VarE 'maybeToList)
-        (AppE (VarE 'toExecString)
-          (AppE (VarE (mkName fieldName)) (VarE x))))
+  progArgExpr (VarArg fieldName) =
+    [| maybeToList . toExecString . $(nameE fieldName) |]
 
   fieldExpr (VarArg fieldName) =
     Just . (mkName fieldName, defaultBang,) <$> TU.typeRepToType (typeRep (Proxy @a))
