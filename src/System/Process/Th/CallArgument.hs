@@ -8,6 +8,7 @@ import Data.HList
 import GHC.TypeError as TE
 import Language.Haskell.TH as TH
 import System.Process.Th.Prelude hiding (Text)
+import TH.Utilities qualified as TU
 
 class CallArgument a where
   toExecString :: a -> String
@@ -71,11 +72,4 @@ instance (Typeable a, CallArgument a) => CallArgumentGen (VarArg a) where
              ])
 
   fieldExpr (VarArg fieldName) =
-    Just . (mkName fieldName, defaultBang,) <$> typeRepToType (typeRep (Proxy @a))
-
-
-type VarStrArg = VarArg String
--- newtype VarStrArg = VarStrArg String deriving (Eq, Show, Typeable)
--- deriving via
-foo :: String
-foo = "eeee"
+    Just . (mkName fieldName, defaultBang,) <$> TU.typeRepToType (typeRep (Proxy @a))
