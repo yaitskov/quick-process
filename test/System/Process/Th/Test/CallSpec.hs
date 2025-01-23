@@ -10,12 +10,13 @@ import System.Process.Th.CallSpec
 
 type VarStrArg = VarArg String
 
-$(genProgArgsRender "/b/mkdir4" ((VarArg @(Either Bool Int) "dn4") .*. HNil))
-$(genProgArgsRender "/b/mkdir" ((VarArg @Bool "dn2") .*. HNil))
-$(genProgArgsRender "/b/mkdir2" ((VarArg @Bool "dn3") .*. HNil))
-$(genProgArgsRender "/bi/mkdir" ((VarArg @String "dn") .*. HNil))
+$(genProgArgsRender "/b/mkdir5" (VarArg @(Maybe Int) "dn5" .*. HNil))
+$(genProgArgsRender "/b/mkdir4" (VarArg @(Either Bool Int) "dn4" .*. HNil))
+$(genProgArgsRender "/b/mkdir" (VarArg @Bool "dn2" .*. HNil))
+$(genProgArgsRender "/b/mkdir2" (VarArg @Bool "dn3" .*. HNil))
+$(genProgArgsRender "/bi/mkdir" (VarArg @String "dn" .*. HNil))
 
-$(genProgArgsRender "/bin/mkdir" (((VarArg "dirname") :: VarStrArg) .*. HNil))
+$(genProgArgsRender "/bin/mkdir" ((VarArg "dirname" :: VarStrArg) .*. HNil))
 
 $(genProgArgsRender "mkdir" (ConstArg "--help" .*. HNil))
 

@@ -1,7 +1,6 @@
 module System.Process.Th.Test.Th where
 
 import System.Process.Th.Test.Prelude
-import Test.QuickCheck
 
 import Refined
 test_tree :: TestTree
@@ -27,5 +26,5 @@ instance (ApplyAB f (e, r) r', HFoldr f v l r)
     hFoldr f v (HCons x l)    = applyAB f (x, hFoldr f v l :: r)
 
 -}
-prop_refined_less_than_5 (x :: Refined (LessThan 5) Int) =
-  unrefine x < 5
+prop_refined_less_than_5 :: Refined (LessThan 5) Int -> Bool
+prop_refined_less_than_5 x = unrefine x < 5

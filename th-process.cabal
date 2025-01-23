@@ -58,6 +58,7 @@ library
     OverloadedStrings
     ImportQualifiedPost
     ScopedTypeVariables
+    TemplateHaskell
     TupleSections
     TypeApplications
     TypeOperators

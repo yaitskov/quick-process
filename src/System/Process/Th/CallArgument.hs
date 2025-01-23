@@ -1,24 +1,24 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE OverloadedLists #-}
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskellQuotes #-}
 
 module System.Process.Th.CallArgument where
 
 import Data.HList
-import GHC.TypeError as TE
+
 import Language.Haskell.TH as TH
 import System.Process.Th.Prelude hiding (Text)
 import TH.Utilities qualified as TU
 
 class CallArgument a where
-  toExecString :: a -> String
-  default toExecString :: Show a => a -> String
-  toExecString = show
+  toExecString :: a -> Maybe String
+  default toExecString :: Show a => a -> Maybe String
+  toExecString = Just . show
 
 instance CallArgument String where
-  toExecString = id
-instance TypeError (Text "Maybe instance of CallArgument is prohibited") => CallArgument (Maybe a) where
-  toExecString _ = error "no no"
+  toExecString = Just
+instance CallArgument a => CallArgument (Maybe a) where
+  toExecString = (toExecString =<<)
 instance (CallArgument a, CallArgument b) => CallArgument (Either a b) where
   toExecString = \case
     Left x -> toExecString x
@@ -29,8 +29,8 @@ instance CallArgument Double
 instance CallArgument Float
 instance CallArgument Word
 instance CallArgument Bool
-instance TypeError (Text "Unit instance of CallArgument is prohibited") => CallArgument () where
-  toExecString _ = error "no no"
+instance CallArgument () where
+  toExecString _ = Nothing
 
 class Typeable a => CallArgumentGen a where
   -- | field name in the record; costant value does not have a field
@@ -50,26 +50,15 @@ instance CallArgumentGen ConstArg where
 defaultBang :: Bang
 defaultBang = Bang NoSourceUnpackedness NoSourceStrictness
 
-typeRepToType :: TypeRep -> Q TH.Type
-typeRepToType tr =
-  let typeName = tyConName (typeRepTyCon tr) in
-    lookupTypeName typeName >>= \case
-    Just tn -> pure $ ConT tn
-    Nothing ->
-      case (typeName, typeRepArgs tr) of
-        ("[]", [la]) -> AppT ListT <$> typeRepToType la
-        (_, xs) -> -- mapM typeRepToType xs
-             fail $ "N0 type f0und: [" <> typeName <> "] args:" <> show xs
-
 newtype VarArg a = VarArg String deriving (Eq, Show, Typeable)
 instance (Typeable a, CallArgument a) => CallArgumentGen (VarArg a) where
   cArgName (VarArg n) = Just n
   progArgExpr (VarArg fieldName) = do
     x <- newName "x"
     pure $ LamE [VarP x]
-      (ListE [AppE (VarE 'toExecString)
-              (AppE (VarE (mkName fieldName)) (VarE x))
-             ])
+      (AppE (VarE 'maybeToList)
+        (AppE (VarE 'toExecString)
+          (AppE (VarE (mkName fieldName)) (VarE x))))
 
   fieldExpr (VarArg fieldName) =
     Just . (mkName fieldName, defaultBang,) <$> TU.typeRepToType (typeRep (Proxy @a))

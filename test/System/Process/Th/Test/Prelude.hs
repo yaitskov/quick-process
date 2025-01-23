@@ -1,6 +1,6 @@
 module System.Process.Th.Test.Prelude (module M) where
 
-import System.Directory as X (doesFileExist, removeFile)
+import System.Directory as M (doesFileExist, removeFile)
 import System.Process.Th.Prelude as M
 import Test.QuickCheck.Instances as M ()
 import Test.Tasty as M
