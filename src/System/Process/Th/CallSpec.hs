@@ -2,9 +2,11 @@ module System.Process.Th.CallSpec where
 
 import Data.Char
 import Data.HList
+import Generic.Random
 import Language.Haskell.TH as TH
-import System.Process.Th.Prelude
 import System.Process.Th.CallArgument
+import System.Process.Th.Prelude
+import Test.QuickCheck (Arbitrary (arbitrary))
 import Text.Casing
 import Text.Regex
 
@@ -14,10 +16,16 @@ class CallSpec cs where
 
 type FoldrConstr l a = (HFoldr (Mapcar (Fun CallArgumentGen (Q a))) [Q a] l [Q a])
 
-genCallArgsRecord :: FoldrConstr l (Maybe VarBangType) => Name -> HList l -> Q Dec
+dataD' :: Quote m => Name -> [m Con] -> [m DerivClause] -> m Dec
+dataD' name = dataD (pure []) name [] Nothing
+
+genCallArgsRecord :: (Show (HList l), FoldrConstr l (Maybe VarBangType)) => Name -> HList l -> Q Dec
 genCallArgsRecord recordName l = do
-  fields <- catMaybes <$> sequence (hMapM (Fun fieldExpr :: Fun CallArgumentGen (Q (Maybe VarBangType))) l)
-  pure $ DataD [] recordName [] Nothing [RecC recordName fields] []
+  fields <- seqA $ catMaybes <$> sequence (hMapM fieldDef l)
+  dataD' recordName [recC recordName fields]
+    [derivClause Nothing [[t|Generic|], [t|Show|], [t|Eq|]]]
+  where
+    fieldDef = Fun fieldExpr :: Fun CallArgumentGen (Q (Maybe VarBangType))
 
 funD' :: Quote m => Name -> [m Pat] -> m Exp -> m Dec
 funD' fname fparams fbody =
@@ -29,6 +37,15 @@ programNameToHsIdentifier :: String -> Maybe (NonEmpty Char)
 programNameToHsIdentifier = nonEmpty . toPascal . fromSnake . underbarred
   where
     underbarred s = subRegex (mkRegex "[^A-Za-z0-9_]") s "_"
+
+seqA :: Monad m => m [a] -> m [m a]
+seqA = (fmap pure <$>)
+
+genArbitraryInstance :: Name -> Q Dec
+genArbitraryInstance recordName =
+  instanceD (pure []) [t| Arbitrary $(conT recordName) |]
+    [ funD' 'arbitrary [] [| genericArbitraryU |]
+    ]
 
 genCallSpecInstance :: FoldrConstr l Exp => Name -> String -> HList l  -> Q Dec
 genCallSpecInstance recordName progName l =
@@ -56,4 +73,5 @@ genCallSpec progName l =
       sequence
       [ genCallArgsRecord recName l
       , genCallSpecInstance recName progName l
+      , genArbitraryInstance recName
       ]
