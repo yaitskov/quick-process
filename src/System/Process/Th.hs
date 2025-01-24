@@ -1,14 +1,18 @@
-{-# LANGUAGE TemplateHaskell #-}
-
-module System.Process.Th where
+module System.Process.Th
+  ( module CA
+  , module CS
+  , module HL
+  , module System.Process.Th
+  ) where
 
 import Data.Char
-import Data.HList
+import Data.HList as HL
 import Language.Haskell.TH as TH
 import Refined
 import System.Process qualified as SP
 import System.Process.Th.Prelude
-
+import System.Process.Th.CallSpec as CS
+import System.Process.Th.CallArgument as CA
 data LowerCase
 
 instance Predicate LowerCase String where
@@ -18,8 +22,6 @@ instance Predicate LowerCase String where
       else throwRefineOtherException (typeRep p) "Not all chars are lower-case"
 
 type LowerCaseString = Refined LowerCase String
-
-
 
 mkDir :: String -> IO ()
 mkDir dname = do

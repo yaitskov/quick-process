@@ -27,18 +27,19 @@ library
     System.Process.Th.CallSpec
     System.Process.Th.Prelude
   build-depends:
-      base >=4 && <5
-    , HList
+      HList
+    , base >=4 && <5
     , bytestring
-    , mtl
+    , casing
     , containers
     , ghc
+    , mtl
     , process
     , refined
     , regex-compat
     , relude
-    , text
     , template-haskell
+    , text
     , th-utilities
 
   hs-source-dirs: src

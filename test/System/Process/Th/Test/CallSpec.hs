@@ -10,17 +10,27 @@ import System.Process.Th.CallSpec
 
 type VarStrArg = VarArg String
 
-$(genProgArgsRender "/b/mkdir7" (VarArg @String "dn71" .*. VarArg @String "dn72" .*. HNil))
-$(genProgArgsRender "/b/mkdir6" (ConstArg "-p" .*. VarArg @(Maybe Int) "dn6" .*. HNil))
-$(genProgArgsRender "/b/mkdir5" (VarArg @(Maybe Int) "dn5" .*. HNil))
-$(genProgArgsRender "/b/mkdir4" (VarArg @(Either Bool Int) "dn4" .*. HNil))
-$(genProgArgsRender "/b/mkdir" (VarArg @Bool "dn2" .*. HNil))
-$(genProgArgsRender "/b/mkdir2" (VarArg @Bool "dn3" .*. HNil))
-$(genProgArgsRender "/bi/mkdir" (VarArg @String "dn" .*. HNil))
+$(genCallSpec "/bin/mkdir7" (VarArg @String "dn71" .*. VarArg @String "dn72" .*. HNil))
 
-$(genProgArgsRender "/bin/mkdir" ((VarArg "dirname" :: VarStrArg) .*. HNil))
+csMkDir7 :: BinMkdir7
+csMkDir7 = BinMkdir7 { dn71 = "a", dn72 = "b" }
 
-$(genProgArgsRender "mkdir" (ConstArg "--help" .*. HNil))
+prop_BinMkdir7_name :: Bool
+prop_BinMkdir7_name = programName csMkDir7 == "/bin/mkdir7"
+
+prop_BinMkdir7_args :: Bool
+prop_BinMkdir7_args = programArgs csMkDir7 == [ "a", "b" ]
+
+$(genCallSpec "/b/mkdir6" (ConstArg "-p" .*. VarArg @(Maybe Int) "dn6" .*. HNil))
+$(genCallSpec "/b/mkdir5" (VarArg @(Maybe Int) "dn5" .*. HNil))
+$(genCallSpec "/b/mkdir4" (VarArg @(Either Bool Int) "dn4" .*. HNil))
+$(genCallSpec "/b/mkdir" (VarArg @Bool "dn2" .*. HNil))
+$(genCallSpec "rm" (ConstArg "--version" .*. HNil))
+$(genCallSpec "/bi/mkdir" (VarArg @String "dn" .*. HNil))
+
+$(genCallSpec "/bin/mkdir" ((VarArg "dirname" :: VarStrArg) .*. HNil))
+
+$(genCallSpec "mkdir" (ConstArg "--help" .*. HNil))
 
 
-$(genProgArgsRender "rmdir" (ConstArg "-v" .*. ConstArg "--help" .*. HNil))
+$(genCallSpec "rmdir" (ConstArg "-v" .*. ConstArg "--help" .*. HNil))
