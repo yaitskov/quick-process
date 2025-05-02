@@ -13,5 +13,6 @@ in hfinal: hprev:
 
 (listToAttrs (map (a:
   nameValuePair a.name
-  (dontCheck (hfinal.callCabal2nix a.name a.source { }))) [
+    (dontCheck (hfinal.callCabal2nix a.name a.source { }))) [
+      { name = "th-utilities";  source = sources.th-utilities; }
   ]))

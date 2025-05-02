@@ -1,4 +1,10 @@
 {
+  "th-utilities": {
+    "branch": "master",
+    "repo": "file:///home/dan/pro/haskell/th-utilities",
+    "rev": "a23f715b932c1b4f49cabc41694c08b16b0e7ff8",
+    "type": "git"
+  },
   "nixpkgs": {
     "branch": "master",
     "owner": "NixOS",
