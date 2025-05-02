@@ -1,10 +1,10 @@
 module System.Process.Th.CallArgument where
 
 import Data.HList
-
 import Language.Haskell.TH as TH
-import Test.QuickCheck (Arbitrary)
+import Refined as M
 import System.Process.Th.Prelude hiding (Text)
+import Test.QuickCheck (Arbitrary)
 import TH.Utilities qualified as TU
 
 class Arbitrary a => CallArgument a where
@@ -29,8 +29,11 @@ instance CallArgument Bool
 instance CallArgument () where
   toExecString _ = Nothing
 
+instance (Typeable a, Predicate c a, CallArgument a) => CallArgument (Refined c a) where
+  toExecString = toExecString . unrefine
+
 class (Typeable a) => CallArgumentGen a where
-  -- | field name in the record; costant value does not have a field
+  -- | field name in the record; constant value does not have a field
   cArgName :: a -> Maybe String
   -- | lambda expression projecting a call argument in CallSpec record to a list of strings
   -- Exp type is '\v -> [String]'

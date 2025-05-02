@@ -1,5 +1,6 @@
 module System.Process.Th.Test.Prelude (module M) where
 
+import Data.HList as M (HList(..), HExtend(..))
 import System.Directory as M (doesFileExist, removeFile)
 import System.Process.Th.Prelude as M
 import Test.QuickCheck.Instances as M ()

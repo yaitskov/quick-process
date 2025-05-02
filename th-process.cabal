@@ -40,6 +40,7 @@ library
     , refined
     , regex-compat
     , relude
+    , syb
     , template-haskell
     , text
     , th-utilities
@@ -73,6 +74,9 @@ test-suite test
   other-modules:
     Discovery
     System.Process.Th.Test.CallSpec
+    System.Process.Th.Test.CallSpec.Const
+    System.Process.Th.Test.CallSpec.VarArg
+    System.Process.Th.Test.CallSpec.VarArg.Refined
     System.Process.Th.Test.Prelude
     System.Process.Th.Test.Th
     Paths_th_process
@@ -141,6 +145,7 @@ test-suite test
     , process
     , quickcheck-instances
     , random
+    , th-utilities
     , refined
     , relude
     , tasty

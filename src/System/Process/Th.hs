@@ -1,9 +1,12 @@
+{-# LANGUAGE DuplicateRecordFields #-}
+{-# LANGUAGE NoFieldSelectors #-}
 module System.Process.Th
   ( module CA
   , module CS
   , module HL
   , module System.Process.Th
   ) where
+
 
 import Data.Char
 import Data.HList as HL
@@ -41,3 +44,7 @@ mkDir dname = do
 -- a = SP.callProcess
   -- pathContentEntries :: [(FilePath, ApiDoc)] <-
   --   runIO $
+
+
+data Foo = Foo { xxx :: Int }
+data Bar = Bar { xxx :: Int }

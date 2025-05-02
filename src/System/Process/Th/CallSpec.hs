@@ -10,6 +10,20 @@ import Test.QuickCheck (Arbitrary (arbitrary))
 import Text.Casing
 import Text.Regex
 
+-- import Data.Data
+-- isTypeOf :: forall b a. (Typeable a, Typeable b) => a -> Maybe (a :~: b)
+-- isTypeOf a = typeOf a `testEquality` (typeRep @b)
+
+-- -- gmapT (\x :: Int -> x + 1) (False, "HEE" :: String)
+
+-- fixLitNat :: forall a. (Data a) => a -> a
+-- fixLitNat x
+--   | Just Refl <- isTypeOf @S x = ooo x
+
+--   | Just Refl <- isTypeOf @V x = x
+--   | otherwise = gmapT fixLitNat x
+
+
 class CallSpec cs where
   programName :: cs -> String
   programArgs :: cs -> [String]
@@ -23,6 +37,7 @@ genCallArgsRecord :: (Show (HList l), FoldrConstr l (Maybe VarBangType)) => Name
 genCallArgsRecord recordName l = do
   fields <- seqA $ catMaybes <$> sequence (hMapM fieldDef l)
   dataD' recordName [recC recordName fields]
+    -- []
     [derivClause Nothing [[t|Generic|], [t|Show|], [t|Eq|]]]
   where
     fieldDef = Fun fieldExpr :: Fun CallArgumentGen (Q (Maybe VarBangType))
