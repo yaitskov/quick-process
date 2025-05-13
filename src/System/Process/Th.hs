@@ -1,5 +1,7 @@
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE NoFieldSelectors #-}
+{-# LANGUAGE MonoLocalBinds #-} -- elim warning
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 module System.Process.Th
   ( module CA
   , module CS
@@ -16,6 +18,7 @@ import System.Process qualified as SP
 import System.Process.Th.Prelude
 import System.Process.Th.CallSpec as CS
 import System.Process.Th.CallArgument as CA
+import Test.QuickCheck  (Arbitrary (..))
 data LowerCase
 
 instance Predicate LowerCase String where
@@ -45,6 +48,16 @@ mkDir dname = do
   -- pathContentEntries :: [(FilePath, ApiDoc)] <-
   --   runIO $
 
+leftError :: Show a => Text -> Either a b -> b
+leftError m = \case
+  Right v -> v
+  Left e -> error $ m <> "; due: " <> show e
 
-data Foo = Foo { xxx :: Int }
-data Bar = Bar { xxx :: Int }
+instance {-# OVERLAPPING #-}
+  (Arbitrary a, Typeable a, Predicate (SizeEqualTo n) [a], KnownNat n) =>
+  Arbitrary (Refined (SizeEqualTo n) [a]) where
+  arbitrary =
+    leftError "Dead code" . refine <$>
+    replicateM (fromIntegral $ natVal (Proxy @n)) arbitrary
+
+  shrink = rights . map refine . shrink . unrefine

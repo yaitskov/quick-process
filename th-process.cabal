@@ -142,6 +142,7 @@ test-suite test
     , formatting
     , generic-lens
     , generic-random
+    , lens
     , process
     , quickcheck-instances
     , random

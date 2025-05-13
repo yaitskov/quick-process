@@ -1,3 +1,4 @@
+-- {-# OPTIONS_GHC -ddump-splices #-}
 {-# LANGUAGE TemplateHaskell #-}
 module System.Process.Th.Test.CallSpec.Const where
 
@@ -18,17 +19,17 @@ prop_Rm_args cs = programArgs cs == [ "--version" ]
 
 $(genCallSpec "mkdir" (ConstArg "--help" .*. HNil))
 
-prop_Mkdir_name :: Mkdir -> Bool
-prop_Mkdir_name cs = programName cs == "mkdir"
+prop_Mkdir_name :: Mkdir -> Property
+prop_Mkdir_name cs = programName cs === "mkdir"
 
-prop_Mkdir_args :: Mkdir -> Bool
-prop_Mkdir_args cs = programArgs cs == [ "--help" ]
+prop_Mkdir_args :: Mkdir -> Property
+prop_Mkdir_args cs = programArgs cs === [ "--help" ]
 
 
-$(genCallSpec "/bin/rmdir" (ConstArg "-v" .*. ConstArg "--help" .*. HNil))
+$(genCallSpec "/bin/rmdir" (ConstArg "-x" .*. ConstArg "-v" .*. ConstArg "--help" .*. HNil))
 
-prop_BinRmdir_name :: Mkdir -> Bool
-prop_BinRmdir_name cs = programName cs == "/bin/mkdir"
+prop_BinRmdir_name :: BinRmdir -> Property
+prop_BinRmdir_name cs = programName cs === "/bin/rmdir"
 
-prop_BinRmdir_args :: Mkdir -> Bool
-prop_BinRmdir_args cs = programArgs cs == [ "-v", "--help" ]
+prop_BinRmdir_args :: BinRmdir -> Property
+prop_BinRmdir_args cs = programArgs cs === [ "-x", "-v", "--help" ]
