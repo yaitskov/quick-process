@@ -5,14 +5,16 @@
     "rev": "a23f715b932c1b4f49cabc41694c08b16b0e7ff8",
     "type": "git"
   },
-  "nixpkgs": {
+  "HList": {
     "branch": "master",
-    "owner": "NixOS",
-    "repo": "nixpkgs",
-    "rev": "22e859ae442d8db72711dfb69aeaeae5df5df18f",
-    "sha256": "sha256:1dcm2z2xw72cmvhwvrw1iywgyyzy8an6kswa06p4ndj14iw9r4k5",
-    "type": "tarball",
-    "url": "https://github.com/NixOS/nixpkgs/archive/22e859ae442d8db72711dfb69aeaeae5df5df18f.tar.gz",
-     "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    "repo": "file:///home/dan/pro/haskell/hlist",
+    "rev": "e688f11d7432c812c2b238464401a86f588f81e1",
+    "type": "git"
+  },
+  "nixpkgs": {
+      "branch": "master",
+      "repo": "/home/dan/pro/nixpkgs",
+      "rev": "e7a98efedcc1d0a2a8455580c562b20718c36444",
+      "type": "git"
   }
 }

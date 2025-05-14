@@ -1,5 +1,5 @@
 { system ? builtins.currentSystem or "x86_64-linux"
-, ghc ? "ghc947"
+, ghc ? "ghc9101"
 }:
 
 let
@@ -41,6 +41,7 @@ let
       ghcid
       hlint
       niv
+      z3
     ]) ++ [ hls ];
     shellHook = ''
       export PS1='$ '

@@ -1,7 +1,7 @@
 { haskell, lib, sources }:
 
 let
-  inherit (haskell.lib) doJailbreak dontCheck doHaddock;
+  inherit (haskell.lib) doJailbreak dontCheck doHaddock overrideCabal;
 
   # 'fakeSha256' is helpful when adding new packages
   #
@@ -15,4 +15,29 @@ in hfinal: hprev:
   nameValuePair a.name
     (dontCheck (hfinal.callCabal2nix a.name a.source { }))) [
       { name = "th-utilities";  source = sources.th-utilities; }
-  ]))
+      { name = "HList";  source = sources.HList; }
+    ])) // {
+      # "HList" = hfinal.callHackageDirect
+      #   { pkg = "HList";
+      #     ver = "0.5.4.0";
+      #     sha256 = "sha256-nzDQfZC22cEZ02661MKnRYUdKFOdq8lRg+ENfrA0PDk=";
+      #   } {};
+      "sbv" = overrideCabal
+        (hfinal.callHackageDirect
+          { pkg = "sbv";
+            ver = "11.6";
+            sha256 = "sha256-ND49xSYaMZCakzlsMMzCsDMAkxF8ZtJgeTNMan4iOaQ=";
+          } {})
+
+        (o: {testSystemDepends = o.testSystemDepends ++ [hfinal.z3];
+             testDepends = (o.testDepends or []) ++ [hfinal.z3];
+             extraLibraries = (o.extraLibraries or []) ++ [hfinal.z3];
+             doCheck = false;
+             checkPhase = ''
+               echo oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo;
+               which z3;
+             '';
+             # testToolDepends = o.testToolDepends or [] ++ [hfinal.z3];
+            })
+      ;
+    }

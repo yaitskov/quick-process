@@ -40,6 +40,7 @@ library
     , refined
     , regex-compat
     , relude
+    , sbv
     , syb
     , template-haskell
     , text
@@ -149,6 +150,7 @@ test-suite test
     , th-utilities
     , refined
     , relude
+    , sbv
     , tasty
     , tasty-discover
     , tasty-expected-failure
