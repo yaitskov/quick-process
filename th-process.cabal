@@ -23,8 +23,11 @@ source-repository head
 library
   exposed-modules:
     System.Process.Th
+    System.Process.Th.CallEffect
     System.Process.Th.CallArgument
     System.Process.Th.CallSpec
+    System.Process.Th.CallSpec.Type
+    System.Process.Th.CallSpec.Verify
     System.Process.Th.Prelude
   build-depends:
       HList
@@ -33,18 +36,22 @@ library
     , bytestring
     , casing
     , containers
+    , filepath
     , generic-random
     , ghc
     , mtl
     , process
+    , random
     , refined
     , regex-compat
+    , regex-tdfa
     , relude
     , sbv
     , syb
     , template-haskell
     , text
     , th-utilities
+    , unix
 
   hs-source-dirs: src
   default-language: Haskell2010

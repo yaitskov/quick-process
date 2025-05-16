@@ -1,18 +1,19 @@
-module System.Process.Th.CallSpec where
+module System.Process.Th.CallSpec
+  ( genCallSpec
+  , module E
+  ) where
 
 import Data.Char
 import Data.HList
 import Generic.Random
 import Language.Haskell.TH as TH
 import System.Process.Th.CallArgument
+import System.Process.Th.CallSpec.Type as E
 import System.Process.Th.Prelude
 import Test.QuickCheck (Arbitrary (arbitrary))
 import Text.Casing
 import Text.Regex
 
-class CallSpec cs where
-  programName :: cs -> String
-  programArgs :: cs -> [String]
 
 type FoldrConstr l a = (HFoldr (Mapcar (Fun CallArgumentGen (Q a))) [Q a] l [Q a])
 
@@ -58,8 +59,8 @@ genCallSpecInstance recordName progName l =
 mkName' :: NonEmptyStr -> Name
 mkName' = mkName . toList
 
-newName' :: NonEmptyStr -> Q Name
-newName' = newName . toList
+-- newName' :: NonEmptyStr -> Q Name
+-- newName' = newName . toList
 
 -- | gen declaration of CallSpec record with CallSpec instance
 genCallSpec ::
