@@ -7,7 +7,6 @@ import Data.HList as HL
 import Refined
 import System.Process.Th.Test.Prelude
 import System.Process.Th.CallArgument
--- import System.Process.Th.CallSpec
 import TH.Utilities qualified as TU
 import Language.Haskell.TH
 type VarStrArg = VarArg String

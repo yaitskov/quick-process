@@ -76,6 +76,95 @@ library
     TypeOperators
     TypeSynonymInstances
 
+test-suite verify-call-specs
+  type: exitcode-stdio-1.0
+  main-is: VerifyCallSpecs.hs
+  other-modules:
+    CallSpecs.Find
+    CallSpecs.Find.Type
+  hs-source-dirs:
+    verify-call-specs
+  default-extensions:
+    LambdaCase
+    OverloadedStrings
+    OverloadedLabels
+    BangPatterns
+    BinaryLiterals
+    ConstrainedClassMethods
+    ConstraintKinds
+    DataKinds
+    DeriveDataTypeable
+    DeriveFoldable
+    DeriveFunctor
+    DeriveGeneric
+    DeriveLift
+    DeriveTraversable
+    EmptyCase
+    EmptyDataDeriving
+    ExistentialQuantification
+    ExplicitForAll
+    FlexibleContexts
+    FlexibleInstances
+    GeneralizedNewtypeDeriving
+    HexFloatLiterals
+    InstanceSigs
+    ImportQualifiedPost
+    KindSignatures
+    MultiParamTypeClasses
+    NamedFieldPuns
+    NamedWildCards
+    NoImplicitPrelude
+    NumericUnderscores
+    PolyKinds
+    PostfixOperators
+    RankNTypes
+    ScopedTypeVariables
+    StandaloneDeriving
+    StandaloneKindSignatures
+    TupleSections
+    TypeApplications
+    TypeOperators
+    TypeSynonymInstances
+  ghc-options: -Wall -dynamic -rtsopts -threaded -main-is VerifyCallSpecs
+  build-depends:
+      Glob
+    , HList
+    , HUnit
+    , QuickCheck
+    , base
+    , bytestring
+    , containers
+    , data-default
+    , directory
+    , errors
+    , exceptions
+    , fmt
+    , formatting
+    , generic-lens
+    , generic-random
+    , lens
+    , process
+    , quickcheck-instances
+    , random
+    , th-utilities
+    , refined
+    , relude
+    , sbv
+    , tasty
+    , tasty-discover
+    , tasty-expected-failure
+    , tasty-hunit
+    , tasty-quickcheck
+    , template-haskell
+    , temporary
+    , text
+    , th-lift-instances
+    , th-process
+    , unix
+    , unliftio
+    , unordered-containers
+  default-language: Haskell2010
+
 test-suite test
   type: exitcode-stdio-1.0
   main-is: Driver.hs

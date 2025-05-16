@@ -10,7 +10,6 @@ import System.Process (spawnProcess, system, waitForProcess)
 import System.Process.Th.CallEffect
 import System.Process.Th.CallSpec
 import System.Process.Th.Prelude hiding (Type, lift)
-import System.Random
 import Test.QuickCheck
 
 
@@ -35,7 +34,7 @@ data CsViolationWithCtx
      }
 
 verifyTrailingHelp ::
-  forall m cs. (MonadIO m, Random cs, CallSpec cs) =>
+  forall m cs. (MonadIO m, CallSpec cs) =>
   Proxy cs ->
   Int ->
   m (Maybe CsViolationWithCtx)
@@ -49,7 +48,7 @@ verifyTrailingHelp _ = go
     go n
       | n <= 0 = pure Nothing
       | otherwise = do
-          cs <- liftIO (generate (chooseAny @cs))
+          cs <- liftIO (generate (arbitrary @cs))
           liftIO (system ("which " <> (programName cs))) >>= \case
             ExitFailure _ ->
               Just . CsViolationWithCtx cs . ProgramNotFound <$> liftIO getSearchPath
@@ -90,12 +89,12 @@ discoverAndVerifyCallSpecs :: Int -> Q Exp
 discoverAndVerifyCallSpecs iterations = do
   ts <- extractInstanceType <$> reifyInstances ''CallSpec [VarT (mkName "a")]
   when (ts == []) $ putStrLn "Discovered 0 types with CallSpec instance!!!"
-  [| fmap catMaybes (sequence $(ListE <$> (mapM genCsVerification ts)))  >>= consumeViolations |]
+  [| fmap catMaybes (sequence $(ListE <$> (mapM genCsVerification ts))) >>= consumeViolations |]
   where
     genCsVerification :: Type -> Q Exp
     genCsVerification t =
       [| verifyTrailingHelp
-           $(pure $ SigE (ConE ''Proxy) (AppT (ConT ''Proxy) t))
+           $(pure $ SigE (ConE 'Proxy) (AppT (ConT ''Proxy) t))
            $(lift iterations)
        |]
     extractInstanceType :: [Dec] -> [Type]

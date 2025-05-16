@@ -3,14 +3,11 @@ module System.Process.Th.CallSpec
   , module E
   ) where
 
-import Data.Char
 import Data.HList
-import Generic.Random
 import Language.Haskell.TH as TH
 import System.Process.Th.CallArgument
 import System.Process.Th.CallSpec.Type as E
 import System.Process.Th.Prelude
-import Test.QuickCheck (Arbitrary (arbitrary))
 import Text.Casing
 import Text.Regex
 

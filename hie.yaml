@@ -8,3 +8,7 @@ cradle:
       config:
         cradle:
           cabal:
+    - path: "./verify-call-specs"
+      config:
+        cradle:
+          cabal:

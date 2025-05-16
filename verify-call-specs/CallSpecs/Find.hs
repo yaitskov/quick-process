@@ -1,0 +1,11 @@
+-- {-# OPTIONS_GHC -ddump-splices #-}
+{-# LANGUAGE TemplateHaskell #-}
+module CallSpecs.Find where
+
+import CallSpecs.Find.Type
+import System.Process.Th
+import System.Process.Th.Prelude hiding (NonEmpty, Type)
+
+type DirPath = Refined NonEmpty String
+
+$(genCallSpec "find" (ConstArg "-H" .*. VarArg @DirPath "path" .*. VarArg @NodeType "-type" .*. HNil))

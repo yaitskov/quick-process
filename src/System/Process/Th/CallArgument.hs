@@ -4,7 +4,6 @@ import Data.HList
 import Language.Haskell.TH as TH
 import Refined as M
 import System.Process.Th.Prelude hiding (Text)
-import Test.QuickCheck (Arbitrary)
 import TH.Utilities qualified as TU
 
 class Arbitrary a => CallArgument a where
@@ -51,7 +50,29 @@ defaultBang :: Bang
 defaultBang = Bang NoSourceUnpackedness NoSourceStrictness
 
 nameE :: String -> Q Exp
-nameE = varE . mkName
+nameE = varE . mkName . escapeFieldName
+
+isValidFirstFieldLetter :: Char -> Bool
+isValidFirstFieldLetter c = isLetter c || c == '_'
+
+isValidFieldLetter :: Char -> Bool
+isValidFieldLetter c = isAlphaNum c || c == '_' || c == '\''
+
+haskellKeyword :: Set String
+haskellKeyword = fromList [ "type", "module", "import", "where", "class", "case", "in", "of" ]
+
+escapeFieldName :: String -> String
+escapeFieldName = \case
+  [] -> error "Empty field name"
+  (h:t) ->
+    case filter isValidFirstFieldLetter [h] ++ filter isValidFieldLetter t of
+      [] -> error "Field name " <> show (h:t) <> " is empty after filtration"
+      "type" -> "type'"
+      "mo" -> "type'"
+      filteredFieldName
+        | filteredFieldName `member` haskellKeyword -> filteredFieldName <> "'"
+        | otherwise -> filteredFieldName
+
 
 newtype VarArg a = VarArg String deriving (Eq, Show, Typeable)
 instance (Typeable a, CallArgument a) => CallArgumentGen (VarArg a) where
@@ -60,4 +81,4 @@ instance (Typeable a, CallArgument a) => CallArgumentGen (VarArg a) where
     [| maybeToList . toExecString . $(nameE fieldName) |]
 
   fieldExpr (VarArg fieldName) =
-    Just . (mkName fieldName, defaultBang,) <$> TU.typeRepToType (typeRep (Proxy @a))
+    Just . (mkName $ escapeFieldName fieldName, defaultBang,) <$> TU.typeRepToType (typeRep (Proxy @a))
