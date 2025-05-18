@@ -9,4 +9,4 @@ import System.Process.Th.Prelude hiding (NonEmpty, Type)
 
 type DirPath = Refined FsPath String
 
-$(genCallSpec "find" (ConstArg "-H" .*. VarArg @DirPath "path" .*. VarArg @NodeType "-type" .*. HNil))
+$(genCallSpec "find" (ConstArg "-H" .*. VarArg @DirPath "path" .*. KeyArg @NodeType "-type" .*. HNil))

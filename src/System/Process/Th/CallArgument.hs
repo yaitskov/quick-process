@@ -73,7 +73,7 @@ escapeFieldName = \case
         | filteredFieldName `member` haskellKeyword -> filteredFieldName <> "'"
         | otherwise -> filteredFieldName
 
-
+-- | Command line argument without preceeding key
 newtype VarArg a = VarArg String deriving (Eq, Show, Typeable)
 instance (Typeable a, CallArgument a) => CallArgumentGen (VarArg a) where
   cArgName (VarArg n) = Just n
@@ -82,3 +82,11 @@ instance (Typeable a, CallArgument a) => CallArgumentGen (VarArg a) where
 
   fieldExpr (VarArg fieldName) =
     Just . (mkName $ escapeFieldName fieldName, defaultBang,) <$> TU.typeRepToType (typeRep (Proxy @a))
+
+-- | Command line argument prefixed with a key
+newtype KeyArg a = KeyArg String deriving (Eq, Show, Typeable)
+instance (Typeable a, CallArgument a) => CallArgumentGen (KeyArg a) where
+  cArgName (KeyArg n) = cArgName (VarArg @a n)
+  progArgExpr (KeyArg fieldName) =
+    [| \x -> $(progArgExpr (ConstArg fieldName)) x <> $(progArgExpr (VarArg @a fieldName)) x |]
+  fieldExpr (KeyArg fieldName) = fieldExpr (VarArg @a fieldName)
