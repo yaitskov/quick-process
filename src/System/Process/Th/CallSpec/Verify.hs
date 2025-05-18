@@ -3,10 +3,11 @@
 {-# LANGUAGE ExistentialQuantification #-}
 module System.Process.Th.CallSpec.Verify where
 
+import Debug.TraceEmbrace
 import Language.Haskell.TH.Syntax
 import System.Exit hiding (exitFailure)
 import System.FilePath (getSearchPath)
-import System.Process (spawnProcess, system, waitForProcess)
+import System.Process (readProcessWithExitCode)
 import System.Process.Th.CallEffect
 import System.Process.Th.CallSpec
 import System.Process.Th.Prelude hiding (Type, lift)
@@ -19,10 +20,12 @@ data Verification
   | SandboxSafe
   deriving (Show, Eq)
 
+type FailureReport = String
+
 data CallSpecViolation
   = HelpKeyIgnored
-  | ProgramNotFound [FilePath]
-  | HelpKeyExitNonZero Int
+  | ProgramNotFound FailureReport [FilePath]
+  | HelpKeyExitNonZero FailureReport
   | UnexpectedCallEffect [CallEffect]
   deriving (Show, Eq)
 
@@ -33,6 +36,14 @@ data CsViolationWithCtx
      , csViolation :: CallSpecViolation
      }
 
+callProcessSilently :: MonadIO m => FilePath -> [String] -> m (Maybe String)
+callProcessSilently p args =
+  liftIO (readProcessWithExitCode p args "") >>= \case
+    (ExitSuccess, _, _) -> pure Nothing
+    (ExitFailure ec, out, err) ->
+      pure . Just $ "Command: " <> p <> " " <> intercalate " " args <>
+      "\nExited with: " <> show ec <> "\nOutput:\n" <> out <> "\nStdErr:\n" <> err
+
 verifyTrailingHelp ::
   forall m cs. (MonadIO m, CallSpec cs) =>
   Proxy cs ->
@@ -41,29 +52,30 @@ verifyTrailingHelp ::
 verifyTrailingHelp _ = go
   where
     helpKey = ["--help"]
-    spCmd pn args onSuccess onFailure =
-      (liftIO $ spawnProcess pn args) >>= liftIO1 waitForProcess >>= \case
-        ExitSuccess -> onSuccess
-        ExitFailure ec -> onFailure ec
+    spCmd pn args onSuccess onFailure = do
+      liftIO $(trIo "spawn process/pn args")
+      callProcessSilently pn args >>= \case
+        Nothing -> onSuccess
+        Just rep -> onFailure rep
     go n
       | n <= 0 = pure Nothing
       | otherwise = do
           cs <- liftIO (generate (arbitrary @cs))
-          liftIO (system ("which " <> (programName cs))) >>= \case
-            ExitFailure _ ->
-              Just . CsViolationWithCtx cs . ProgramNotFound <$> liftIO getSearchPath
-            ExitSuccess ->
+          callProcessSilently "which"  [programName cs] >>= \case
+            Just rep ->
+              Just . CsViolationWithCtx cs . ProgramNotFound rep <$> liftIO getSearchPath
+            Nothing ->
               spCmd (programName cs) ("--hheellppaoesnthqkxsth" : helpKey)
                 (pure . Just $ CsViolationWithCtx cs HelpKeyIgnored)
                 (\_ ->
                    spCmd (programName cs) (programArgs cs <> helpKey)
                      (go $ n - 1)
-                     (\ec -> pure . Just . CsViolationWithCtx cs $ HelpKeyExitNonZero ec))
+                     (\rep -> pure . Just . CsViolationWithCtx cs $ HelpKeyExitNonZero rep))
 
 consumeViolations :: MonadIO m => [CsViolationWithCtx] -> m ()
 consumeViolations = \case
   [] ->
-    pure ()
+    putStrLn "CallSpecs are valid"
   vis -> do
     -- good case for hetftio ??
     putStrLn $ "Error: quick-process found " <> show (length vis) <> " failed call specs:"
@@ -76,10 +88,10 @@ consumeViolations = \case
       case v of
         HelpKeyIgnored ->
           putStrLn $ (programName cs) <> ": help key ignored"
-        ProgramNotFound pathCopy ->
-          putStrLn $ (programName cs) <> " is not found on PATH " <> show pathCopy
-        HelpKeyExitNonZero ec -> do
-          putStrLn $ (programName cs) <> ": non zero exit code (" <> show ec <> ")"
+        ProgramNotFound report' pathCopy ->
+          putStrLn $ (programName cs) <> " is not found on PATH " <> show pathCopy <> "\nReport:\n" <> report'
+        HelpKeyExitNonZero rep -> do
+          putStrLn $ (programName cs) <> ": non zero exit code (" <> rep <> ")"
           putStrLn $ "    with arguments: " <> show (programArgs cs)
         UnexpectedCallEffect uce -> do
           putStrLn $ (programName cs) <> ": has unsafisfied effects: " <> show uce

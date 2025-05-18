@@ -28,7 +28,9 @@ library
     System.Process.Th.CallSpec
     System.Process.Th.CallSpec.Type
     System.Process.Th.CallSpec.Verify
+    System.Process.Th.Predicate.Regex
     System.Process.Th.Prelude
+    System.Process.Th.TdfaToSbvRegex
   build-depends:
       HList
     , QuickCheck
@@ -51,6 +53,7 @@ library
     , template-haskell
     , text
     , th-utilities
+    , trace-embrace
     , unix
 
   hs-source-dirs: src

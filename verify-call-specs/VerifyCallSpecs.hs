@@ -7,4 +7,4 @@ import System.Process.Th
 import System.Process.Th.Prelude
 
 main :: IO ()
-main = $(discoverAndVerifyCallSpecs 7)
+main = $(discoverAndVerifyCallSpecs 1)

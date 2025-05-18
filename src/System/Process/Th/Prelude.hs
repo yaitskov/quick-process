@@ -1,10 +1,15 @@
 module System.Process.Th.Prelude (module M, liftIO1) where
 
 import Data.Char as M (isAlphaNum, isAlpha, isLetter)
+import Data.HList as M (typeRep)
+import Data.List as M (isSuffixOf)
 import Data.Set as M (member)
 import Generic.Random as M (genericArbitraryU)
 import Relude as M hiding (Predicate)
-import Test.QuickCheck as M (Arbitrary (..))
+import Relude.Extra as M (toPairs)
+import Test.QuickCheck as M (Arbitrary (..), chooseInt, sized)
+import Refined as M (Refined, refine, Predicate (..), throwRefineOtherException)
+import GHC.TypeLits as M (Symbol, KnownSymbol (..), symbolVal)
 
 liftIO1 :: MonadIO m => (a -> IO b) -> a -> m b
 liftIO1 = (.) liftIO

@@ -56,9 +56,6 @@ genCallSpecInstance recordName progName l =
 mkName' :: NonEmptyStr -> Name
 mkName' = mkName . toList
 
--- newName' :: NonEmptyStr -> Q Name
--- newName' = newName . toList
-
 -- | gen declaration of CallSpec record with CallSpec instance
 genCallSpec ::
   (FoldrConstr l (Maybe VarBangType), FoldrConstr l Exp, Show (HList l)) =>
