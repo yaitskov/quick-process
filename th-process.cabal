@@ -30,6 +30,7 @@ library
     System.Process.Th.CallSpec.Verify
     System.Process.Th.Predicate.Regex
     System.Process.Th.Prelude
+    System.Process.Th.Sbv.Arbitrary
     System.Process.Th.TdfaToSbvRegex
   build-depends:
       HList

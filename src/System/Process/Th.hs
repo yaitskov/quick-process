@@ -7,6 +7,7 @@ module System.Process.Th
   , module CS
   , module E
   , module HL
+  , module M
   , module System.Process.Th
   ) where
 
@@ -20,7 +21,7 @@ import System.Process.Th.Prelude
 import System.Process.Th.CallArgument as CA
 import System.Process.Th.CallSpec as CS
 import System.Process.Th.CallSpec.Verify as E
-
+import System.Process.Th.Predicate.Regex as M
 
 data LowerCase
 

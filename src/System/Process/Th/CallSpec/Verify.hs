@@ -11,7 +11,6 @@ import System.Process (readProcessWithExitCode)
 import System.Process.Th.CallEffect
 import System.Process.Th.CallSpec
 import System.Process.Th.Prelude hiding (Type, lift)
-import Test.QuickCheck
 
 
 data Verification
