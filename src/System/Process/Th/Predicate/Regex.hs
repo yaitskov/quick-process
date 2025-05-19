@@ -30,6 +30,7 @@ instance KnownSymbol s => Predicate (Regex s) String where
 
 instance {-# OVERLAPPING #-}
   KnownSymbol p => Arbitrary (Refined (Regex p) String) where
+
   arbitrary =
     let rx = symbolVal (Proxy @p) in
       do n <- chooseInt (0, maxBound)

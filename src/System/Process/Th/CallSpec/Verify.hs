@@ -24,6 +24,7 @@ type FailureReport = String
 
 data CallSpecViolation
   = HelpKeyIgnored
+  | HelpKeyNotSupported FailureReport
   | ProgramNotFound FailureReport [FilePath]
   | HelpKeyExitNonZero FailureReport
   | UnexpectedCallEffect [CallEffect]
@@ -65,12 +66,14 @@ verifyTrailingHelp _ = go
             Just rep ->
               Just . CsViolationWithCtx cs . ProgramNotFound rep <$> liftIO getSearchPath
             Nothing ->
-              spCmd (programName cs) ("--hheellppaoesnthqkxsth" : helpKey)
-                (pure . Just $ CsViolationWithCtx cs HelpKeyIgnored)
-                (\_ ->
-                   spCmd (programName cs) (programArgs cs <> helpKey)
-                     (go $ n - 1)
-                     (\rep -> pure . Just . CsViolationWithCtx cs $ HelpKeyExitNonZero rep))
+              spCmd (programName cs) helpKey
+                (spCmd (programName cs) ("--hheellppaoesnthqkxsth" : helpKey)
+                   (pure . Just $ CsViolationWithCtx cs HelpKeyIgnored)
+                   (\_ ->
+                      spCmd (programName cs) (programArgs cs <> helpKey)
+                        (go $ n - 1)
+                        (\rep -> pure . Just . CsViolationWithCtx cs $ HelpKeyExitNonZero rep)))
+                (\rep -> pure . Just . CsViolationWithCtx cs $ HelpKeyNotSupported rep)
 
 consumeViolations :: MonadIO m => [CsViolationWithCtx] -> m ()
 consumeViolations = \case
@@ -90,6 +93,8 @@ consumeViolations = \case
           putStrLn $ (programName cs) <> ": help key ignored"
         ProgramNotFound report' pathCopy ->
           putStrLn $ (programName cs) <> " is not found on PATH " <> show pathCopy <> "\nReport:\n" <> report'
+        HelpKeyNotSupported report' ->
+          putStrLn $ "--help key is not supported by " <> programName cs <> "\nReport:\n" <> report'
         HelpKeyExitNonZero rep -> do
           putStrLn $ (programName cs) <> ": non zero exit code (" <> rep <> ")"
           putStrLn $ "    with arguments: " <> show (programArgs cs)
