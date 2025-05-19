@@ -31,3 +31,4 @@ instance {-# OVERLAPPING #-}
         Right vv -> pure vv
 
 type FsPath = Regex "^([/~]|(~[/]|[/])?[^/\x0000-\x001F]+([/][^/\x0000-\x001F]+)*[/]?)$"
+type FsPath2 = Regex "^([/~]|(~[/]|[/])?[a-zA-Z0-9._ -]+([/][a-zA-Z0-9._ -]+)*[/]?)$"

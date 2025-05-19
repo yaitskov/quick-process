@@ -47,4 +47,6 @@ findStringByRegex r = go (3 :: Int)
 
     matchRx (x :: SString) = match x r
 
-    trySat n = satOne n (\x -> matchRx x .&& S.length x .== literal (fromIntegral n))
+    trySat n =
+      satOne n (\x -> matchRx x
+                 .&& S.length x .== literal (fromIntegral n))
