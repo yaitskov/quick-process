@@ -3,12 +3,9 @@
 module System.Process.Th.Predicate.Regex where
 
 import System.Process.Th.Prelude
+import System.Process.Th.Sbv.Arbitrary
 import System.Process.Th.TdfaToSbvRegex as P
 import Text.Regex.TDFA ((=~))
--- import Data.SBV (Satisfiable, SymVal, Modelable (..), SString, sat, (.==), (.&&), literal)
--- import Data.SBV.String qualified as S
-
-import System.Process.Th.Sbv.Arbitrary
 
 
 data Regex (p :: Symbol) = Regex deriving (Generic)

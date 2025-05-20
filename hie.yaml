@@ -12,3 +12,7 @@ cradle:
       config:
         cradle:
           cabal:
+    - path: "./sandbox-effect"
+      config:
+        cradle:
+          cabal:
