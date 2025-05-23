@@ -11,8 +11,7 @@ import System.Process.Th ()
 type M = Refined (SizeEqualTo 2) String
 
 
-
-$(genCallSpec "rm" (VarArg @M "fileName" .*. HNil))
+$(genCallSpec [TrailingHelpValidate] "rm" (VarArg @M "fileName" .*. HNil))
 
 prop_rm_filename_of_2_chars_args :: Rm -> Property
 prop_rm_filename_of_2_chars_args cs = (length <$> (programArgs cs ^? ix 0)) === Just 2

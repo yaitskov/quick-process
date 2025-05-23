@@ -1,6 +1,10 @@
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE PolyKinds #-}
+{-# LANGUAGE MonoLocalBinds #-}
+{-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE EmptyDataDeriving #-}
+
 module System.Process.Th.Predicate.InputFile where
 
 import System.Process.Th.Prelude
@@ -8,9 +12,11 @@ import System.Process.Th.TdfaToSbvRegex as P
 import System.Process.Th.CallEffect
 import System.Process.Th.Sbv.Arbitrary
 import Text.Regex.TDFA ((=~))
+import Type.Reflection qualified as R
+import Type.Reflection ((:~:)(Refl))
+import Data.Typeable (eqT)
 
-
-data InFile (ext :: Symbol)
+data InFile (ext :: Symbol) deriving (Typeable, Data, Show, Eq, Generic)
 
 instance KnownSymbol e => Predicate (InFile e) String where
   validate p x =
@@ -74,3 +80,16 @@ instance {-# OVERLAPPING #-}
       case refine sv of
         Left e -> error $ "Satisfing value [" <> show sv <> "] is no valid: " <> show e
         Right vv -> pure vv
+
+
+fulfillInFile :: forall m x. (MonadIO m, Typeable x, Data x) => x -> m x
+fulfillInFile x
+  | _rRefined `R.App` rif@(R.TypeRep @tif) `R.App` _rString <- R.TypeRep @x
+  , R.TypeRep <- R.typeRepKind rif
+  , Just Refl <- eqT @x @(Refined tif String)
+  , rInFile `R.App` _rExt <- R.TypeRep @tif
+  -- , R.TypeRep <- R.typeRepKind rInFile
+  , Just R.HRefl <- R.eqTypeRep  rInFile (R.typeRep :: R.TypeRep InFile)
+   = do putStrLn $ show rInFile <> "   => " <> (show (unrefine x))
+        pure x
+  | otherwise = pure x

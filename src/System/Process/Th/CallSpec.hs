@@ -5,6 +5,7 @@ module System.Process.Th.CallSpec
 
 import Data.HList
 import Language.Haskell.TH as TH
+import Language.Haskell.TH.Syntax qualified as THS
 import System.Process.Th.CallArgument
 import System.Process.Th.CallSpec.Type as E
 import System.Process.Th.Prelude
@@ -21,7 +22,7 @@ genCallArgsRecord :: (Show (HList l), FoldrConstr l (Maybe VarBangType)) => Name
 genCallArgsRecord recordName l = do
   fields <- seqA $ catMaybes <$> sequence (hMapM fieldDef l)
   dataD' recordName [recC recordName fields]
-    [derivClause Nothing [[t|Generic|], [t|Show|], [t|Eq|]]]
+    [derivClause Nothing [[t|Typeable|], [t|Data|], [t|Generic|], [t|Show|], [t|Eq|]]]
   where
     fieldDef = Fun fieldExpr :: Fun CallArgumentGen (Q (Maybe VarBangType))
 
@@ -45,12 +46,14 @@ genArbitraryInstance recordName =
     [ funD' 'arbitrary [] [| genericArbitraryU |]
     ]
 
-genCallSpecInstance :: FoldrConstr l Exp => Name -> String -> HList l  -> Q Dec
-genCallSpecInstance recordName progName l =
+
+genCallSpecInstance :: FoldrConstr l Exp => [VerificationMethod] -> Name -> String -> HList l  -> Q Dec
+genCallSpecInstance verMethods recordName progName l =
   instanceD (pure []) [t| CallSpec $(conT recordName) |]
   [ funD' 'programName [ [p|_|] ] [| $(stringE progName) |]
   , funD' 'programArgs []
       [| concat . flap $(listE (hMapM (Fun progArgExpr :: Fun CallArgumentGen (Q Exp)) l)) |]
+  , funD' 'verificationMethods [ [p|_|] ] (THS.lift verMethods)
   ]
 
 mkName' :: NonEmptyStr -> Name
@@ -59,14 +62,14 @@ mkName' = mkName . toList
 -- | gen declaration of CallSpec record with CallSpec instance
 genCallSpec ::
   (FoldrConstr l (Maybe VarBangType), FoldrConstr l Exp, Show (HList l)) =>
-  String -> HList l -> Q [Dec]
-genCallSpec progName l =
+  [VerificationMethod] -> String -> HList l -> Q [Dec]
+genCallSpec verMethods progName l =
   maybe err (g . mkName') (programNameToHsIdentifier progName)
   where
     err = fail $ "Call spec name is bad: " <> show progName <> " " <> show l
     g recName =
       sequence
       [ genCallArgsRecord recName l
-      , genCallSpecInstance recName progName l
+      , genCallSpecInstance verMethods recName progName l
       , genArbitraryInstance recName
       ]

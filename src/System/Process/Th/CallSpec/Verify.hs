@@ -12,13 +12,6 @@ import System.Process.Th.CallEffect
 import System.Process.Th.CallSpec
 import System.Process.Th.Prelude hiding (Type, lift)
 
-
-data Verification
-  = TrailingHelpValidate
-  | PureCall
-  | SandboxSafe
-  deriving (Show, Eq)
-
 type FailureReport = String
 
 data CallSpecViolation
@@ -44,13 +37,48 @@ callProcessSilently p args =
       pure . Just $ "Command: " <> p <> " " <> intercalate " " args <>
       "\nExited with: " <> show ec <> "\nOutput:\n" <> out <> "\nStdErr:\n" <> err
 
+verifyWithActiveMethods ::
+  forall m cs. (MonadIO m, CallSpec cs) =>
+  Set VerificationMethod ->
+  Proxy cs ->
+  Int ->
+  m [CsViolationWithCtx]
+verifyWithActiveMethods activeVerMethods pcs iterations =
+  catMaybes <$> mapM  go  (filter (`member` activeVerMethods) (verificationMethods pcs))
+  where
+    go = \case
+      TrailingHelpValidate -> verifyTrailingHelp pcs iterations
+      SandboxValidate -> validateInSandbox pcs iterations
+
+validateInSandbox ::
+  forall m cs. (MonadIO m, CallSpec cs) =>
+  Proxy cs ->
+  Int ->
+  m (Maybe CsViolationWithCtx)
+validateInSandbox _ _ = pure Nothing
+
 verifyTrailingHelp ::
   forall m cs. (MonadIO m, CallSpec cs) =>
   Proxy cs ->
   Int ->
   m (Maybe CsViolationWithCtx)
-verifyTrailingHelp _ = go
+verifyTrailingHelp pcs iterations =
+  callProcessSilently "which"  [programName pcs] >>= \case
+    Just rep -> do
+      cs <- genCs
+      Just . CsViolationWithCtx cs . ProgramNotFound rep <$> liftIO getSearchPath
+    Nothing ->
+      spCmd (programName pcs) helpKey
+        (spCmd (programName pcs) ("--hheellppaoesnthqkxsth" : helpKey)
+           (do cs <- genCs
+               pure . Just $ CsViolationWithCtx cs HelpKeyIgnored)
+           (\_ -> go iterations))
+        (\rep -> do
+            cs <- genCs
+            pure . Just . CsViolationWithCtx cs $ HelpKeyNotSupported rep)
+
   where
+    genCs = liftIO (generate (arbitrary @cs))
     helpKey = ["--help"]
     spCmd pn args onSuccess onFailure = do
       liftIO $(trIo "spawn process/pn args")
@@ -61,18 +89,10 @@ verifyTrailingHelp _ = go
       | n <= 0 = pure Nothing
       | otherwise = do
           cs <- liftIO (generate (arbitrary @cs))
-          callProcessSilently "which"  [programName cs] >>= \case
-            Just rep ->
-              Just . CsViolationWithCtx cs . ProgramNotFound rep <$> liftIO getSearchPath
-            Nothing ->
-              spCmd (programName cs) helpKey
-                (spCmd (programName cs) ("--hheellppaoesnthqkxsth" : helpKey)
-                   (pure . Just $ CsViolationWithCtx cs HelpKeyIgnored)
-                   (\_ ->
-                      spCmd (programName cs) (programArgs cs <> helpKey)
-                        (go $ n - 1)
-                        (\rep -> pure . Just . CsViolationWithCtx cs $ HelpKeyExitNonZero rep)))
-                (\rep -> pure . Just . CsViolationWithCtx cs $ HelpKeyNotSupported rep)
+          spCmd (programName pcs) (programArgs cs <> helpKey)
+            (go $ n - 1)
+            (\rep -> pure . Just . CsViolationWithCtx cs $ HelpKeyExitNonZero rep)
+
 
 consumeViolations :: MonadIO m => [CsViolationWithCtx] -> m ()
 consumeViolations = \case
@@ -85,31 +105,32 @@ consumeViolations = \case
     putStrLn "End of quick-process violation report"
     exitFailure
   where
-    sortByProgamName = sortWith (\(CsViolationWithCtx x _) -> programName x)
+    sortByProgamName = sortWith (\(CsViolationWithCtx x _) -> programName $ pure x)
     printViolation (CsViolationWithCtx cs v) =
       case v of
         HelpKeyIgnored ->
-          putStrLn $ (programName cs) <> ": help key ignored"
+          putStrLn $ (programName $ pure cs) <> ": help key ignored"
         ProgramNotFound report' pathCopy ->
-          putStrLn $ (programName cs) <> " is not found on PATH " <> show pathCopy <> "\nReport:\n" <> report'
+          putStrLn $ (programName $ pure cs) <> " is not found on PATH " <> show pathCopy <> "\nReport:\n" <> report'
         HelpKeyNotSupported report' ->
-          putStrLn $ "--help key is not supported by " <> programName cs <> "\nReport:\n" <> report'
+          putStrLn $ "--help key is not supported by " <> programName (pure cs) <> "\nReport:\n" <> report'
         HelpKeyExitNonZero rep -> do
-          putStrLn $ (programName cs) <> ": non zero exit code (" <> rep <> ")"
+          putStrLn $ (programName $ pure cs) <> ": non zero exit code (" <> rep <> ")"
           putStrLn $ "    with arguments: " <> show (programArgs cs)
         UnexpectedCallEffect uce -> do
-          putStrLn $ (programName cs) <> ": has unsafisfied effects: " <> show uce
+          putStrLn $ (programName $ pure cs) <> ": has unsafisfied effects: " <> show uce
           putStrLn $ "    with arguments: " <> show (programArgs cs)
 
-discoverAndVerifyCallSpecs :: Int -> Q Exp
-discoverAndVerifyCallSpecs iterations = do
+discoverAndVerifyCallSpecs :: Set VerificationMethod -> Int -> Q Exp
+discoverAndVerifyCallSpecs activeVerMethods iterations = do
   ts <- extractInstanceType <$> reifyInstances ''CallSpec [VarT (mkName "a")]
   when (ts == []) $ putStrLn "Discovered 0 types with CallSpec instance!!!"
-  [| fmap catMaybes (sequence $(ListE <$> (mapM genCsVerification ts))) >>= consumeViolations |]
+  [| fmap concat (sequence $(ListE <$> (mapM genCsVerification ts))) >>= consumeViolations |]
   where
     genCsVerification :: Type -> Q Exp
     genCsVerification t =
-      [| verifyTrailingHelp
+      [| verifyWithActiveMethods
+           $(lift activeVerMethods)
            $(pure $ SigE (ConE 'Proxy) (AppT (ConT ''Proxy) t))
            $(lift iterations)
        |]

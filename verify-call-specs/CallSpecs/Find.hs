@@ -4,9 +4,8 @@ module CallSpecs.Find where
 
 import CallSpecs.Find.Type
 import System.Process.Th
-import System.Process.Th.Predicate.Regex
 import System.Process.Th.Prelude hiding (NonEmpty, Type)
 
 type DirPath = Refined FsPath String
 
-$(genCallSpec "find" (ConstArg "-H" .*. VarArg @DirPath "path" .*. KeyArg @NodeType "-type" .*. HNil))
+$(genCallSpec [TrailingHelpValidate] "find" (ConstArg "-H" .*. VarArg @DirPath "path" .*. KeyArg @NodeType "-type" .*. HNil))

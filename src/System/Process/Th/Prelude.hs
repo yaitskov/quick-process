@@ -1,5 +1,6 @@
 module System.Process.Th.Prelude (module M, liftIO1) where
 
+import Data.Data as M (Data)
 import Data.Char as M (isAlphaNum, isAlpha, isLetter)
 import Data.HList as M (typeRep)
 import Data.List as M (isSuffixOf)
@@ -8,7 +9,7 @@ import Generic.Random as M (genericArbitraryU)
 import Relude as M hiding (Predicate)
 import Relude.Extra as M (toPairs)
 import Test.QuickCheck as M (Gen, Arbitrary (..), generate, chooseInt, sized, elements)
-import Refined as M (Refined, refine, Predicate (..), throwRefineOtherException)
+import Refined as M (Refined, unrefine, refine, Predicate (..), throwRefineOtherException)
 import GHC.TypeLits as M (Symbol, KnownSymbol (..), symbolVal)
 
 liftIO1 :: MonadIO m => (a -> IO b) -> a -> m b

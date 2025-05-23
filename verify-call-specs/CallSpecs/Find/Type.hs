@@ -4,7 +4,7 @@ import Generic.Random
 import System.Process.Th
 import System.Process.Th.Prelude
 
-data NodeType = FileNode | DirNode deriving (Show, Eq, Generic)
+data NodeType = FileNode | DirNode deriving (Show, Eq, Generic, Typeable, Data)
 
 instance Arbitrary NodeType where
   arbitrary = genericArbitraryU

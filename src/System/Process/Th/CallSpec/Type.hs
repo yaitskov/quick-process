@@ -1,7 +1,16 @@
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveLift #-}
 module System.Process.Th.CallSpec.Type where
 
 import System.Process.Th.Prelude
+import Language.Haskell.TH.Syntax
+
+data VerificationMethod
+  = TrailingHelpValidate
+  | SandboxValidate
+  deriving (Show, Ord, Eq, Typeable, Data, Generic, Lift)
 
 class Arbitrary cs => CallSpec cs where
-  programName :: cs -> String
+  programName :: Proxy cs -> String
   programArgs :: cs -> [String]
+  verificationMethods :: Proxy cs -> [VerificationMethod]
