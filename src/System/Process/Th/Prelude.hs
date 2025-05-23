@@ -1,5 +1,6 @@
 module System.Process.Th.Prelude (module M, liftIO1) where
 
+import Control.Exception.Safe as M (MonadCatch, tryIO, try, tryAny)
 import Data.Data as M (Data)
 import Data.Char as M (isAlphaNum, isAlpha, isLetter)
 import Data.HList as M (typeRep)

@@ -50,6 +50,7 @@ library
     , regex-compat
     , regex-tdfa
     , relude
+    , safe-exceptions
     , sbv
     , syb
     , template-haskell

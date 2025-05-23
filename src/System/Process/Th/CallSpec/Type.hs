@@ -5,6 +5,7 @@ module System.Process.Th.CallSpec.Type where
 import System.Process.Th.Prelude
 import Language.Haskell.TH.Syntax
 
+-- | DC definition order defines validation order
 data VerificationMethod
   = TrailingHelpValidate
   | SandboxValidate

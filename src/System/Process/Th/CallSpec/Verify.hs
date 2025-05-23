@@ -29,16 +29,20 @@ data CsViolationWithCtx
      , csViolation :: CallSpecViolation
      }
 
-callProcessSilently :: MonadIO m => FilePath -> [String] -> m (Maybe String)
+callProcessSilently :: (MonadCatch m, MonadIO m) => FilePath -> [String] -> m (Maybe String)
 callProcessSilently p args =
-  liftIO (readProcessWithExitCode p args "") >>= \case
-    (ExitSuccess, _, _) -> pure Nothing
-    (ExitFailure ec, out, err) ->
+  tryIO (liftIO (readProcessWithExitCode p args "")) >>= \case
+    Left e ->
+      pure . Just $ "Command: " <> p <> " " <> intercalate " " args <>
+      "\nFailed due:\n" <> show e
+
+    Right (ExitSuccess, _, _) -> pure Nothing
+    Right (ExitFailure ec, out, err) ->
       pure . Just $ "Command: " <> p <> " " <> intercalate " " args <>
       "\nExited with: " <> show ec <> "\nOutput:\n" <> out <> "\nStdErr:\n" <> err
 
 verifyWithActiveMethods ::
-  forall m cs. (MonadIO m, CallSpec cs) =>
+  forall m cs. (MonadCatch m, MonadIO m, CallSpec cs) =>
   Set VerificationMethod ->
   Proxy cs ->
   Int ->
@@ -51,14 +55,14 @@ verifyWithActiveMethods activeVerMethods pcs iterations =
       SandboxValidate -> validateInSandbox pcs iterations
 
 validateInSandbox ::
-  forall m cs. (MonadIO m, CallSpec cs) =>
+  forall m cs. (MonadCatch m, MonadIO m, CallSpec cs) =>
   Proxy cs ->
   Int ->
   m (Maybe CsViolationWithCtx)
 validateInSandbox _ _ = pure Nothing
 
 verifyTrailingHelp ::
-  forall m cs. (MonadIO m, CallSpec cs) =>
+  forall m cs. (MonadCatch m, MonadIO m, CallSpec cs) =>
   Proxy cs ->
   Int ->
   m (Maybe CsViolationWithCtx)
@@ -76,7 +80,6 @@ verifyTrailingHelp pcs iterations =
         (\rep -> do
             cs <- genCs
             pure . Just . CsViolationWithCtx cs $ HelpKeyNotSupported rep)
-
   where
     genCs = liftIO (generate (arbitrary @cs))
     helpKey = ["--help"]
