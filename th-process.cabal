@@ -39,7 +39,10 @@ library
     , base >=4 && <5
     , bytestring
     , casing
+    , conduit
+    , conduit-find
     , containers
+    , directory
     , filepath
     , generic-random
     , ghc
@@ -54,6 +57,7 @@ library
     , sbv
     , syb
     , template-haskell
+    , temporary
     , text
     , th-utilities
     , trace-embrace
@@ -63,6 +67,7 @@ library
   default-language: Haskell2010
   ghc-options: -Wall
   default-extensions:
+    BangPatterns
     ConstraintKinds
     DataKinds
     DefaultSignatures

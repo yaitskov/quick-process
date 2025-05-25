@@ -11,7 +11,7 @@ data VerificationMethod
   | SandboxValidate
   deriving (Show, Ord, Eq, Typeable, Data, Generic, Lift)
 
-class Arbitrary cs => CallSpec cs where
+class (Arbitrary cs, Data cs) => CallSpec cs where
   programName :: Proxy cs -> String
   programArgs :: cs -> [String]
   verificationMethods :: Proxy cs -> [VerificationMethod]

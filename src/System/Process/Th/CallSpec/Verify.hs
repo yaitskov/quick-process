@@ -1,16 +1,26 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ExistentialQuantification #-}
+{-# LANGUAGE MonoLocalBinds #-}
 module System.Process.Th.CallSpec.Verify where
 
+
+import Control.Monad.Writer.Strict hiding (lift)
+import Data.Conduit
+import Data.Conduit.Find as F
+import Data.Conduit.List qualified as DCL
 import Debug.TraceEmbrace
 import Language.Haskell.TH.Syntax
+import System.Directory
 import System.Exit hiding (exitFailure)
-import System.FilePath (getSearchPath)
+import System.FilePath (getSearchPath, takeDirectory, takeExtension)
+import System.IO.Temp (withSystemTempDirectory)
 import System.Process (readProcessWithExitCode)
 import System.Process.Th.CallEffect
 import System.Process.Th.CallSpec
+import System.Process.Th.Predicate.InputFile
 import System.Process.Th.Prelude hiding (Type, lift)
+
 
 type FailureReport = String
 
@@ -19,6 +29,7 @@ data CallSpecViolation
   | HelpKeyNotSupported FailureReport
   | ProgramNotFound FailureReport [FilePath]
   | HelpKeyExitNonZero FailureReport
+  | SandboxLaunchFailed FailureReport
   | UnexpectedCallEffect [CallEffect]
   deriving (Show, Eq)
 
@@ -29,7 +40,9 @@ data CsViolationWithCtx
      , csViolation :: CallSpecViolation
      }
 
-callProcessSilently :: (MonadCatch m, MonadIO m) => FilePath -> [String] -> m (Maybe String)
+type M m = (MonadMask m, MonadCatch m, MonadIO m)
+
+callProcessSilently :: M m => FilePath -> [String] -> m (Maybe String)
 callProcessSilently p args =
   tryIO (liftIO (readProcessWithExitCode p args "")) >>= \case
     Left e ->
@@ -42,27 +55,80 @@ callProcessSilently p args =
       "\nExited with: " <> show ec <> "\nOutput:\n" <> out <> "\nStdErr:\n" <> err
 
 verifyWithActiveMethods ::
-  forall m cs. (MonadCatch m, MonadIO m, CallSpec cs) =>
+  forall m cs. (M m, CallSpec cs) =>
   Set VerificationMethod ->
   Proxy cs ->
   Int ->
   m [CsViolationWithCtx]
 verifyWithActiveMethods activeVerMethods pcs iterations =
-  catMaybes <$> mapM  go  (filter (`member` activeVerMethods) (verificationMethods pcs))
+  catMaybes <$> mapM go  (filter (`member` activeVerMethods) (verificationMethods pcs))
   where
     go = \case
       TrailingHelpValidate -> verifyTrailingHelp pcs iterations
       SandboxValidate -> validateInSandbox pcs iterations
 
 validateInSandbox ::
-  forall m cs. (MonadCatch m, MonadIO m, CallSpec cs) =>
+  forall m cs. (M m, CallSpec cs) =>
   Proxy cs ->
   Int ->
   m (Maybe CsViolationWithCtx)
-validateInSandbox _ _ = pure Nothing
+validateInSandbox pcs !iterations
+  | iterations <= 0 = pure Nothing
+  | otherwise =
+    withSystemTempDirectory "th-process" go >>= \case
+      Nothing -> validateInSandbox pcs $ iterations - 1
+      Just e -> pure $ Just e
+  where
+    checkFilesExist cs outFiles = do
+      filterM (pure . not <=< doesFileExist) outFiles >>= \case
+        [] -> pure Nothing
+        ne -> pure . Just . CsViolationWithCtx cs $
+          UnexpectedCallEffect
+          [ FsEffect . FsAnd $ fmap (FsNot . flip FsPathPredicate [FsExists]) ne
+          ]
 
+    findOriginFor projectDir inFile = do
+      xs :: [FilePath] <- runConduitRes $
+        F.find projectDir (do ignoreVcs
+                              glob $ "*" <> takeExtension inFile
+                              regular
+                              not_ F.executable) .| DCL.consume
+      case xs of
+        [] -> pure Nothing
+        neXs -> Just <$> generate (elements neXs)
+
+    genInputFile projectDir inFile = (fromMaybe "/etc/hosts" <$> findOriginFor projectDir inFile) >>=
+      \origin -> createDirectoryIfMissing True (takeDirectory inFile) >>
+                 copyFile origin inFile >>
+                 putStrLn ("File "  <> show origin <> " => " <> show inFile)
+
+    doIn projectDir () = do
+      cs <- liftIO (generate (arbitrary @cs))
+      inFiles <- execWriterT (gmapM findInFile cs)
+      -- absolute path is an issue for generator
+      -- though process in docker is run under root - high chance to pass ;)
+      -- quick hack is to use  odd size in Gen to avoid absolute path it Sandbox mode
+      mapM_ (liftIO1 (genInputFile projectDir)) inFiles
+      callProcessSilently (programName (pure cs)) (programArgs cs) >>= \case
+        Nothing -> do
+          outFiles <- execWriterT (gmapM findOutFile cs)
+          liftIO (checkFilesExist cs outFiles)
+        Just e -> pure . Just . CsViolationWithCtx cs . SandboxLaunchFailed $ show e
+    go tdp = do
+      projectDir <- liftIO getCurrentDirectory
+      bracket
+        (liftIO $ setCurrentDirectory tdp)
+        (\() -> liftIO $ setCurrentDirectory projectDir)
+        (doIn projectDir)
+
+-- find expected InFiles - create folders on path and touch empty file / random bytes / find by ext in project folder
+-- launch
+-- find OutFiles check that they exist
+-- cd to provious folder
+-- remove temp directory
+-- next iteration if no error
 verifyTrailingHelp ::
-  forall m cs. (MonadCatch m, MonadIO m, CallSpec cs) =>
+  forall m cs. (M m, CallSpec cs) =>
   Proxy cs ->
   Int ->
   m (Maybe CsViolationWithCtx)
@@ -118,6 +184,9 @@ consumeViolations = \case
         HelpKeyNotSupported report' ->
           putStrLn $ "--help key is not supported by " <> programName (pure cs) <> "\nReport:\n" <> report'
         HelpKeyExitNonZero rep -> do
+          putStrLn $ (programName $ pure cs) <> ": non zero exit code (" <> rep <> ")"
+          putStrLn $ "    with arguments: " <> show (programArgs cs)
+        SandboxLaunchFailed rep -> do
           putStrLn $ (programName $ pure cs) <> ": non zero exit code (" <> rep <> ")"
           putStrLn $ "    with arguments: " <> show (programArgs cs)
         UnexpectedCallEffect uce -> do

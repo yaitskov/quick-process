@@ -10,7 +10,7 @@ import System.Process.Th.Prelude
 $(genCallSpec
   [TrailingHelpValidate, SandboxValidate]
   "cp"
-  (   VarArg @(Refined (InFile "*") String) "source"
+  (   VarArg @(Refined (InFile "hs") String) "source"
   .*. VarArg @(Refined (OutFile "*") String) "destination"
   .*. HNil
   )

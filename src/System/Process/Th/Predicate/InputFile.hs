@@ -7,6 +7,7 @@
 
 module System.Process.Th.Predicate.InputFile where
 
+import Control.Monad.Writer.Strict
 import System.Process.Th.Prelude
 import System.Process.Th.TdfaToSbvRegex as P
 import System.Process.Th.CallEffect
@@ -81,15 +82,24 @@ instance {-# OVERLAPPING #-}
         Left e -> error $ "Satisfing value [" <> show sv <> "] is no valid: " <> show e
         Right vv -> pure vv
 
-
-fulfillInFile :: forall m x. (MonadIO m, Typeable x, Data x) => x -> m x
-fulfillInFile x
+findRefinedStrings :: forall p m x.
+  ( Typeable p
+  , MonadWriter [FilePath] m
+  , MonadIO m
+  , Typeable x
+  , Data x
+  ) => Proxy p -> x -> m x
+findRefinedStrings _ x
   | _rRefined `R.App` rif@(R.TypeRep @tif) `R.App` _rString <- R.TypeRep @x
   , R.TypeRep <- R.typeRepKind rif
   , Just Refl <- eqT @x @(Refined tif String)
   , rInFile `R.App` _rExt <- R.TypeRep @tif
-  -- , R.TypeRep <- R.typeRepKind rInFile
-  , Just R.HRefl <- R.eqTypeRep  rInFile (R.typeRep :: R.TypeRep InFile)
-   = do putStrLn $ show rInFile <> "   => " <> (show (unrefine x))
-        pure x
+  , Just R.HRefl <- R.eqTypeRep  rInFile (R.typeRep :: R.TypeRep p)
+  = let fp = unrefine x in tell [fp] >> pure x
   | otherwise = pure x
+
+findInFile :: forall m x. (MonadWriter [FilePath] m, MonadIO m, Data x) => x -> m x
+findInFile = findRefinedStrings (Proxy @InFile)
+
+findOutFile :: forall m x. (MonadWriter [FilePath] m, MonadIO m, Data x) => x -> m x
+findOutFile = findRefinedStrings (Proxy @OutFile)
