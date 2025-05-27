@@ -1,5 +1,7 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module System.Process.Th.CallArgument where
 
+import Control.Monad.Writer.Strict
 import Data.HList
 import Language.Haskell.TH as TH
 import Refined as M
@@ -31,14 +33,21 @@ instance CallArgument () where
 instance (Typeable a, Predicate c a, CallArgument a) => CallArgument (Refined c a) where
   toExecString = toExecString . unrefine
 
+newtype QR a
+  = QR { unQR :: WriterT [Dec] Q a }
+  deriving (Functor, Applicative, Monad, MonadFail, MonadWriter [Dec])
+
+instance Quote QR where
+  newName n = QR $ lift (newName n)
+
 class (Typeable a) => CallArgumentGen a where
   -- | field name in the record; constant value does not have a field
   cArgName :: a -> Maybe String
   -- | lambda expression projecting a call argument in CallSpec record to a list of strings
   -- Exp type is '\v -> [String]'
-  progArgExpr :: a -> Q Exp
+  progArgExpr :: a -> QR Exp
   -- | TH field definition of call argument in CallSpec record
-  fieldExpr :: a -> Q (Maybe VarBangType)
+  fieldExpr :: a -> QR (Maybe VarBangType)
 
 newtype ConstArg = ConstArg String deriving (Eq, Show, Typeable)
 instance CallArgumentGen ConstArg where
@@ -82,10 +91,12 @@ newtype VarArg a = VarArg String deriving (Eq, Show, Typeable)
 instance (Typeable a, CallArgument a) => CallArgumentGen (VarArg a) where
   cArgName (VarArg n) = Just n
   progArgExpr (VarArg fieldName) =
-    [| maybeToList . toExecString . $(nameE fieldName) |]
+    QR $ lift [| maybeToList . toExecString . $(nameE fieldName) |]
 
   fieldExpr (VarArg fieldName) =
-    Just . (mkName $ escapeFieldName fieldName, defaultBang,) <$> TU.typeRepToType (typeRep (Proxy @a))
+    Just . (mkName $ escapeFieldName fieldName, defaultBang,) <$> atRep
+    where
+      atRep = QR . lift $ TU.typeRepToType (typeRep (Proxy @a))
 
 -- | Command line argument prefixed with a key
 newtype KeyArg a = KeyArg String deriving (Eq, Show, Typeable)
@@ -94,5 +105,3 @@ instance (Typeable a, CallArgument a) => CallArgumentGen (KeyArg a) where
   progArgExpr (KeyArg fieldName) =
     [| \x -> $(progArgExpr (ConstArg fieldName)) x <> $(progArgExpr (VarArg @a fieldName)) x |]
   fieldExpr (KeyArg fieldName) = fieldExpr (VarArg @a fieldName)
-
-type FoldrConstr l a = (HFoldr (Mapcar (Fun CallArgumentGen (Q a))) [Q a] l [Q a])
