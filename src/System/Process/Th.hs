@@ -20,6 +20,7 @@ import System.Process qualified as SP
 import System.Process.Th.Prelude
 import System.Process.Th.CallArgument as CA
 import System.Process.Th.CallSpec as CS
+import System.Process.Th.CallSpec.Subcases as M
 import System.Process.Th.CallSpec.Verify as E
 import System.Process.Th.Predicate.Regex as M
 import System.Process.Th.Predicate.InputFile as M

@@ -2,7 +2,7 @@ module System.Process.Th.Prelude (module M, liftIO1) where
 
 import Control.Exception.Safe as M (MonadMask, MonadCatch, bracket, tryIO, try, tryAny)
 import Data.Data as M (Data, gmapM)
-import Data.Char as M (isAlphaNum, isAlpha, isLetter)
+import Data.Char as M (isAlphaNum, isAlpha, isLetter, toLower)
 import Data.HList as M (typeRep)
 import Data.List as M (isSuffixOf)
 import Data.Set as M (member)

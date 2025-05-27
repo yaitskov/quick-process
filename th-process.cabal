@@ -26,6 +26,7 @@ library
     System.Process.Th.CallEffect
     System.Process.Th.CallArgument
     System.Process.Th.CallSpec
+    System.Process.Th.CallSpec.Subcases
     System.Process.Th.CallSpec.Type
     System.Process.Th.CallSpec.Verify
     System.Process.Th.Predicate.InputFile
@@ -181,6 +182,7 @@ test-suite sandbox-effect
   main-is: SandBoxEffect.hs
   other-modules:
     CallSpecs.Cp
+    CallSpecs.FindCases
   hs-source-dirs:
     sandbox-effect
   default-extensions:

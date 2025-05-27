@@ -3,8 +3,9 @@
 module SandBoxEffect where
 
 import CallSpecs.Cp ()
+import CallSpecs.FindCases ()
 import System.Process.Th
 import System.Process.Th.Prelude
 
 main :: IO ()
-main = $(discoverAndVerifyCallSpecs (fromList [TrailingHelpValidate, SandboxValidate]) 1)
+main = $(discoverAndVerifyCallSpecs (fromList [TrailingHelpValidate, SandboxValidate]) 4)

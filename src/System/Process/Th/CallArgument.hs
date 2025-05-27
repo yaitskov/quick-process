@@ -61,6 +61,10 @@ isValidFieldLetter c = isAlphaNum c || c == '_' || c == '\''
 haskellKeyword :: Set String
 haskellKeyword = fromList [ "type", "module", "import", "where", "class", "case", "in", "of" ]
 
+mapFirst :: (a -> a) -> [a] -> [a]
+mapFirst _ [] = []
+mapFirst f (h:t) = f h : t
+
 escapeFieldName :: String -> String
 escapeFieldName = \case
   [] -> error "Empty field name"
@@ -90,3 +94,5 @@ instance (Typeable a, CallArgument a) => CallArgumentGen (KeyArg a) where
   progArgExpr (KeyArg fieldName) =
     [| \x -> $(progArgExpr (ConstArg fieldName)) x <> $(progArgExpr (VarArg @a fieldName)) x |]
   fieldExpr (KeyArg fieldName) = fieldExpr (VarArg @a fieldName)
+
+type FoldrConstr l a = (HFoldr (Mapcar (Fun CallArgumentGen (Q a))) [Q a] l [Q a])
