@@ -113,7 +113,7 @@ validateInSandbox pcs !iterations
         Nothing -> do
           outFiles <- execWriterT (gmapM findOutFile cs)
           liftIO (checkFilesExist cs outFiles)
-        Just e -> pure . Just . CsViolationWithCtx cs . SandboxLaunchFailed $ show e
+        Just e -> pure . Just . CsViolationWithCtx cs $ SandboxLaunchFailed e
     go tdp = do
       projectDir <- liftIO getCurrentDirectory
       bracket
@@ -182,13 +182,13 @@ consumeViolations = \case
         ProgramNotFound report' pathCopy ->
           putStrLn $ (programName $ pure cs) <> " is not found on PATH " <> show pathCopy <> "\nReport:\n" <> report'
         HelpKeyNotSupported report' ->
-          putStrLn $ "--help key is not supported by " <> programName (pure cs) <> "\nReport:\n" <> report'
+          putStrLn $ "--help key is not supported by [" <> programName (pure cs) <> "]\nReport:\n" <> report'
         HelpKeyExitNonZero rep -> do
           putStrLn $ (programName $ pure cs) <> ": non zero exit code (" <> rep <> ")"
           putStrLn $ "    with arguments: " <> show (programArgs cs)
-        SandboxLaunchFailed rep -> do
-          putStrLn $ (programName $ pure cs) <> ": non zero exit code (" <> rep <> ")"
-          putStrLn $ "    with arguments: " <> show (programArgs cs)
+        SandboxLaunchFailed rep ->
+          putStrLn $ (programName $ pure cs) <> " - non zero exit code:\n" <> rep <>
+                     "    With arguments: " <> show (programArgs cs)
         UnexpectedCallEffect uce -> do
           putStrLn $ (programName $ pure cs) <> ": has unsafisfied effects: " <> show uce
           putStrLn $ "    with arguments: " <> show (programArgs cs)
