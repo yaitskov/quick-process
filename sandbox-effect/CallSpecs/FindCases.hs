@@ -1,4 +1,3 @@
--- {-# OPTIONS_GHC -ddump-splices #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell #-}
 module CallSpecs.FindCases where

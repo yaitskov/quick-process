@@ -32,6 +32,7 @@ library
     System.Process.Th.Predicate.InputFile
     System.Process.Th.Predicate.Regex
     System.Process.Th.Prelude
+    System.Process.Th.Pretty
     System.Process.Th.Sbv.Arbitrary
     System.Process.Th.TdfaToSbvRegex
   build-depends:
@@ -48,6 +49,7 @@ library
     , generic-random
     , ghc
     , mtl
+    , pretty
     , process
     , random
     , refined

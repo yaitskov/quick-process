@@ -6,7 +6,7 @@ module System.Process.Th.CallSpec.Verify where
 
 
 import Control.Monad.Writer.Strict hiding (lift)
-import Data.Conduit
+import Data.Conduit ( runConduitRes, (.|) )
 import Data.Conduit.Find as F
 import Data.Conduit.List qualified as DCL
 import Debug.TraceEmbrace
@@ -22,7 +22,7 @@ import System.Process.Th.Predicate.InputFile
 import System.Process.Th.Prelude hiding (Type, lift)
 
 
-type FailureReport = String
+type FailureReport = Doc
 
 data CallSpecViolation
   = HelpKeyIgnored
@@ -42,17 +42,19 @@ data CsViolationWithCtx
 
 type M m = (MonadMask m, MonadCatch m, MonadIO m)
 
-callProcessSilently :: M m => FilePath -> [String] -> m (Maybe String)
+
+callProcessSilently :: M m => FilePath -> [String] -> m (Maybe Doc)
 callProcessSilently p args =
   tryIO (liftIO (readProcessWithExitCode p args "")) >>= \case
     Left e ->
-      pure . Just $ "Command: " <> p <> " " <> intercalate " " args <>
-      "\nFailed due:\n" <> show e
+      pure . Just $ "Command: [" <> doc p <> " " <> hsep (escArg <$> args) <> "]" $$
+      "Failed due:" $$ tab e
 
     Right (ExitSuccess, _, _) -> pure Nothing
     Right (ExitFailure ec, out, err) ->
-      pure . Just $ "Command: " <> p <> " " <> intercalate " " args <>
-      "\nExited with: " <> show ec <> "\nOutput:\n" <> out <> "\nStdErr:\n" <> err
+      pure . Just $ "Command: [" <> doc p <> " " <> hsep (escArg <$> args) <> "]" $$
+      (if ec > 1 then "Exited with: " <> show ec $$ "" else "")
+      <> out &! (("Output: " <+>) . tab) <> err &! (("StdErr: " <+>) . tab)
 
 verifyWithActiveMethods ::
   forall m cs. (M m, CallSpec cs) =>
@@ -121,12 +123,6 @@ validateInSandbox pcs !iterations
         (\() -> liftIO $ setCurrentDirectory projectDir)
         (doIn projectDir)
 
--- find expected InFiles - create folders on path and touch empty file / random bytes / find by ext in project folder
--- launch
--- find OutFiles check that they exist
--- cd to provious folder
--- remove temp directory
--- next iteration if no error
 verifyTrailingHelp ::
   forall m cs. (M m, CallSpec cs) =>
   Proxy cs ->
@@ -168,30 +164,31 @@ consumeViolations = \case
   [] ->
     putStrLn "CallSpecs are valid"
   vis -> do
+    let dashes = "-------------------------------------------------------------"
     -- good case for hetftio ??
-    putStrLn $ "Error: quick-process found " <> show (length vis) <> " failed call specs:"
-    forM_ (sortByProgamName vis) printViolation
-    putStrLn "End of quick-process violation report"
+    printDoc $ "Error: quick-process found " <> doc (length vis) <> " failed call specs:"
+      $$ (vcat $ zipWith (\i v -> tab ("-- [" <> doc i <> "] " <> dashes $$ printViolation v))
+                 [1::Int ..] (sortByProgamName vis))
+      <> "---------" <> dashes $$ "End of quick-process violation report"
     exitFailure
   where
     sortByProgamName = sortWith (\(CsViolationWithCtx x _) -> programName $ pure x)
     printViolation (CsViolationWithCtx cs v) =
       case v of
-        HelpKeyIgnored ->
-          putStrLn $ (programName $ pure cs) <> ": help key ignored"
+        HelpKeyIgnored -> (text . programName $ pure cs) <> ": help key ignored"
         ProgramNotFound report' pathCopy ->
-          putStrLn $ (programName $ pure cs) <> " is not found on PATH " <> show pathCopy <> "\nReport:\n" <> report'
+          (text . programName $ pure cs) <> " is not found on PATH:" $$ vsep pathCopy
+           $$ "Report:" $$ tab report'
         HelpKeyNotSupported report' ->
-          putStrLn $ "--help key is not supported by [" <> programName (pure cs) <> "]\nReport:\n" <> report'
-        HelpKeyExitNonZero rep -> do
-          putStrLn $ (programName $ pure cs) <> ": non zero exit code (" <> rep <> ")"
-          putStrLn $ "    with arguments: " <> show (programArgs cs)
+          "--help key is not supported by [" <> (text . programName $ pure cs) <> "]"
+          $$ "Report:" $$ tab report'
+        HelpKeyExitNonZero rep ->
+          (text . programName $ pure cs) <> " - non zero exit code:" $$ tab rep
         SandboxLaunchFailed rep ->
-          putStrLn $ (programName $ pure cs) <> " - non zero exit code:\n" <> rep <>
-                     "    With arguments: " <> show (programArgs cs)
+          (text . programName $ pure cs) <> " - non zero exit code:" $$ tab rep
         UnexpectedCallEffect uce -> do
-          putStrLn $ (programName $ pure cs) <> ": has unsafisfied effects: " <> show uce
-          putStrLn $ "    with arguments: " <> show (programArgs cs)
+          (text . programName $ pure cs) <> ": has unsafisfied effects:" $$ (text $ show uce)
+           $$ "With arguments: " <> tab (programArgs cs)
 
 discoverAndVerifyCallSpecs :: Set VerificationMethod -> Int -> Q Exp
 discoverAndVerifyCallSpecs activeVerMethods iterations = do

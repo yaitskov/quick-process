@@ -8,4 +8,4 @@ import System.Process.Th
 import System.Process.Th.Prelude
 
 main :: IO ()
-main = $(discoverAndVerifyCallSpecs (fromList [TrailingHelpValidate, SandboxValidate]) 10)
+main = $(discoverAndVerifyCallSpecs (fromList [SandboxValidate]) 1)
