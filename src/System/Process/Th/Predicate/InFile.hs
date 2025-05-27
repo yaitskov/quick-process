@@ -5,19 +5,21 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE EmptyDataDeriving #-}
 
-module System.Process.Th.Predicate.InputFile where
+module System.Process.Th.Predicate.InFile where
 
 import Control.Monad.Writer.Strict
 import System.Process.Th.Prelude
 import System.Process.Th.TdfaToSbvRegex as P
 import System.Process.Th.CallEffect
 import System.Process.Th.Sbv.Arbitrary
+import System.Process.Th.CallArgument (NeList)
 import Text.Regex.TDFA ((=~))
 import Type.Reflection qualified as R
 import Type.Reflection ((:~:)(Refl))
 import Data.Typeable (eqT)
 
-data InFile (ext :: Symbol) deriving (Typeable, Data, Show, Eq, Generic)
+
+data InFile (ext :: Symbol) deriving (Data, Show, Eq, Generic)
 
 instance KnownSymbol e => Predicate (InFile e) String where
   validate p x =
@@ -32,18 +34,39 @@ instance KnownSymbol e => Predicate (InFile e) String where
         then Nothing
         else throwRefineOtherException (typeRep p) $ "Bad FilePath " <> toText x <> "]"
 
+instance Predicate (InFile e) String => Predicate (InFile e) [String] where
+  validate p = listToMaybe . mapMaybe (validate p)
+instance Predicate (InFile e) String => Predicate (InFile e) (NeList String) where
+  validate p = listToMaybe . mapMaybe (validate p) . toList
+
+genFilePathBy :: forall e. KnownSymbol e => Proxy e -> Gen FilePath
+genFilePathBy _ =
+  let ext = symbolVal (Proxy @e) in
+    findStringByRegex
+      (parse $ if ext == "*"
+        then "^[^/\x0000-\x001F]+([.][a-z]{1,4})?$"
+        else "^[^/\x0000-\x001F]+[.]" <> ext <> "$")
+
+refinErr :: (Predicate p a, Show a) => a -> Refined p a
+refinErr v =
+  case refine v of
+    Left e -> error $ "Satisfing value [" <> show v <> "] is no valid: " <> show e
+    Right vv -> vv
 
 instance {-# OVERLAPPING #-}
   KnownSymbol e => Arbitrary (Refined (InFile e) FilePath) where
   arbitrary =
-    let ext = symbolVal (Proxy @e) in do
-      sv <- findStringByRegex
-        (parse $ if ext == "*"
-          then "^[^/\x0000-\x001F]+([.][a-z]{1,4})?$"
-          else "^[^/\x0000-\x001F]+[.]" <> ext <> "$")
-      case refine sv of
-        Left e -> error $ "Satisfing value [" <> show sv <> "] is no valid: " <> show e
-        Right vv -> pure vv
+    genFilePathBy (Proxy @e) >>= pure . refinErr
+
+instance {-# OVERLAPPING #-}
+  KnownSymbol e => Arbitrary (Refined (InFile e) [FilePath]) where
+  arbitrary =
+    sized $ \n -> refinErr <$> mapM (\_ -> genFilePathBy $ Proxy @e) (take n [1::Int ..])
+
+instance {-# OVERLAPPING #-}
+  KnownSymbol e => Arbitrary (Refined (InFile e) (NeList FilePath)) where
+  arbitrary =
+    sized $ \n -> refinErr <$> mapM (\_ -> genFilePathBy $ Proxy @e) (0 :| take n [1::Int ..])
 
 data Ts (x :: Maybe TimeReference) (y :: k)
 data UxFsPerm = UxFsPerm Natural
@@ -82,24 +105,45 @@ instance {-# OVERLAPPING #-}
         Left e -> error $ "Satisfing value [" <> show sv <> "] is no valid: " <> show e
         Right vv -> pure vv
 
-findRefinedStrings :: forall p m x.
+-- findRefinedStrings :: forall p m x.
+--   ( Typeable p
+--   , MonadWriter [FilePath] m
+--   , MonadIO m
+--   , Typeable x
+--   , Data x
+--   ) => Proxy p -> x -> m x
+-- findRefinedStrings _ x
+--   | _rRefined `R.App` rif@(R.TypeRep @tif) `R.App` _rString <- R.TypeRep @x
+--   , R.TypeRep <- R.typeRepKind rif
+--   , Just Refl <- eqT @x @(Refined tif String)
+--   , rInFile `R.App` _rExt <- R.TypeRep @tif
+--   , Just R.HRefl <- R.eqTypeRep  rInFile (R.typeRep :: R.TypeRep p)
+--   = let fp = unrefine x in tell [fp] >> pure x
+--   | otherwise = pure x
+
+findRefinedStrings :: forall v p m x.
   ( Typeable p
   , MonadWriter [FilePath] m
   , MonadIO m
   , Typeable x
+  , Typeable v
   , Data x
-  ) => Proxy p -> x -> m x
-findRefinedStrings _ x
+  ) => Proxy p -> (v -> [String]) -> x -> m x
+findRefinedStrings _ f x
   | _rRefined `R.App` rif@(R.TypeRep @tif) `R.App` _rString <- R.TypeRep @x
   , R.TypeRep <- R.typeRepKind rif
-  , Just Refl <- eqT @x @(Refined tif String)
+  , Just Refl <- eqT @x @(Refined tif v)
   , rInFile `R.App` _rExt <- R.TypeRep @tif
   , Just R.HRefl <- R.eqTypeRep  rInFile (R.typeRep :: R.TypeRep p)
-  = let fp = unrefine x in tell [fp] >> pure x
+  = let fp = unrefine x in tell (f fp) >> pure x
   | otherwise = pure x
 
+
 findInFile :: forall m x. (MonadWriter [FilePath] m, MonadIO m, Data x) => x -> m x
-findInFile = findRefinedStrings (Proxy @InFile)
+findInFile =
+  findRefinedStrings (Proxy @InFile) id >=>
+  findRefinedStrings @(NeList FilePath) (Proxy @InFile) toList >=>
+  findRefinedStrings (Proxy @InFile) pure
 
 findOutFile :: forall m x. (MonadWriter [FilePath] m, MonadIO m, Data x) => x -> m x
-findOutFile = findRefinedStrings (Proxy @OutFile)
+findOutFile = findRefinedStrings (Proxy @OutFile) pure

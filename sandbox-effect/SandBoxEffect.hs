@@ -2,7 +2,8 @@
 {-# LANGUAGE TemplateHaskell #-}
 module SandBoxEffect where
 
-import CallSpecs.Cp ()
+import CallSpecs.CpOne ()
+import CallSpecs.CpManyToDir ()
 import CallSpecs.FindCases ()
 import System.Process.Th
 import System.Process.Th.Prelude

@@ -29,7 +29,9 @@ library
     System.Process.Th.CallSpec.Subcases
     System.Process.Th.CallSpec.Type
     System.Process.Th.CallSpec.Verify
-    System.Process.Th.Predicate.InputFile
+    System.Process.Th.OrphanArbitrary
+    System.Process.Th.Predicate.InDir
+    System.Process.Th.Predicate.InFile
     System.Process.Th.Predicate.Regex
     System.Process.Th.Prelude
     System.Process.Th.Pretty
@@ -183,7 +185,8 @@ test-suite sandbox-effect
   type: exitcode-stdio-1.0
   main-is: SandBoxEffect.hs
   other-modules:
-    CallSpecs.Cp
+    CallSpecs.CpOne
+    CallSpecs.CpManyToDir
     CallSpecs.FindCases
   hs-source-dirs:
     sandbox-effect

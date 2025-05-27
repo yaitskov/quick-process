@@ -18,7 +18,8 @@ import System.IO.Temp (withSystemTempDirectory)
 import System.Process (readProcessWithExitCode)
 import System.Process.Th.CallEffect
 import System.Process.Th.CallSpec
-import System.Process.Th.Predicate.InputFile
+import System.Process.Th.Predicate.InFile
+import System.Process.Th.Predicate.InDir
 import System.Process.Th.Prelude hiding (Type, lift)
 
 
@@ -101,12 +102,12 @@ validateInSandbox pcs !iterations
 
     genInputFile projectDir inFile = (fromMaybe "/etc/hosts" <$> findOriginFor projectDir inFile) >>=
       \origin -> createDirectoryIfMissing True (takeDirectory inFile) >>
-                 copyFile origin inFile >>
-                 putStrLn ("File "  <> show origin <> " => " <> show inFile)
+                 copyFile origin inFile
+                 -- putStrLn ("File "  <> show origin <> " => " <> show inFile)
 
     doIn projectDir () = do
       cs <- liftIO (generate (arbitrary @cs))
-      inFiles <- execWriterT (gmapM findInFile cs)
+      inFiles <- execWriterT (gmapM (findInFile >=> findRefinedDirs) cs)
       -- absolute path is an issue for generator
       -- though process in docker is run under root - high chance to pass ;)
       -- quick hack is to use  odd size in Gen to avoid absolute path it Sandbox mode

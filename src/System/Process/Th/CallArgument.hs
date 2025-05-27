@@ -4,19 +4,18 @@ module System.Process.Th.CallArgument where
 import Control.Monad.Writer.Strict
 import Data.HList
 import Language.Haskell.TH as TH
-import Refined as M
+import Refined as M hiding (NonEmpty)
+import System.Process.Th.OrphanArbitrary ()
 import System.Process.Th.Prelude hiding (Text)
 import TH.Utilities qualified as TU
 
 class Arbitrary a => CallArgument a where
-  toExecString :: a -> Maybe String
-  default toExecString :: Show a => a -> Maybe String
-  toExecString = Just . show
+  toExecString :: a -> [String]
+  default toExecString :: Show a => a -> [String]
+  toExecString = (:[]) . show
 
-instance CallArgument String where
-  toExecString = Just
 instance CallArgument a => CallArgument (Maybe a) where
-  toExecString = (toExecString =<<)
+  toExecString = maybe [] toExecString
 instance (CallArgument a, CallArgument b) => CallArgument (Either a b) where
   toExecString = \case
     Left x -> toExecString x
@@ -28,7 +27,18 @@ instance CallArgument Float
 instance CallArgument Word
 instance CallArgument Bool
 instance CallArgument () where
-  toExecString _ = Nothing
+  toExecString _ = []
+
+-- | Disambiguate 'Refined.NonEmpty'
+type NeList = NonEmpty
+
+instance CallArgument a => CallArgument (NonEmpty a) where
+  toExecString = concatMap toExecString
+
+instance CallArgument a => CallArgument [a] where
+  toExecString = concatMap toExecString
+instance {-# OVERLAPPING #-} CallArgument String where
+  toExecString = (:[])
 
 instance (Typeable a, Predicate c a, CallArgument a) => CallArgument (Refined c a) where
   toExecString = toExecString . unrefine
@@ -91,7 +101,7 @@ newtype VarArg a = VarArg String deriving (Eq, Show, Typeable)
 instance (Typeable a, CallArgument a) => CallArgumentGen (VarArg a) where
   cArgName (VarArg n) = Just n
   progArgExpr (VarArg fieldName) =
-    QR $ lift [| maybeToList . toExecString . $(nameE fieldName) |]
+    QR $ lift [| toExecString . $(nameE fieldName) |]
 
   fieldExpr (VarArg fieldName) =
     Just . (mkName $ escapeFieldName fieldName, defaultBang,) <$> atRep

@@ -23,7 +23,8 @@ import System.Process.Th.CallSpec as CS
 import System.Process.Th.CallSpec.Subcases as M
 import System.Process.Th.CallSpec.Verify as E
 import System.Process.Th.Predicate.Regex as M
-import System.Process.Th.Predicate.InputFile as M
+import System.Process.Th.Predicate.InFile as M
+import System.Process.Th.Predicate.InDir as M
 
 data LowerCase
 
