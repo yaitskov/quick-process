@@ -12,6 +12,7 @@ import Control.Monad.Writer.Strict
 import Data.HList
 import Language.Haskell.TH as TH
 import Language.Haskell.TH.Syntax qualified as THS
+import System.Directory
 import System.Process.Th.CallArgument
 import System.Process.Th.CallSpec.Type as E
 import System.Process.Th.Prelude
@@ -67,7 +68,9 @@ mkName' = mkName . toList
 genCallSpec ::
   (FoldrConstr l (Maybe VarBangType), FoldrConstr l Exp, Show (HList l)) =>
   [VerificationMethod] -> String -> HList l -> Q [Dec]
-genCallSpec verMethods progName l =
+genCallSpec verMethods progName l = do
+  runIO . whenNothingM_ (findExecutable progName) . fail
+    $ "Program " <> show progName <> " is not found"
   maybe err (g . mkName') (programNameToHsIdentifier progName)
   where
     err = fail $ "Call spec name is bad: " <> show progName <> " " <> show l
