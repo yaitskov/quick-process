@@ -129,10 +129,10 @@ verifyTrailingHelp ::
   Int ->
   m (Maybe CsViolationWithCtx)
 verifyTrailingHelp pcs iterations =
-  callProcessSilently "which"  [programName pcs] >>= \case
+  liftIO (findExecutable (programName pcs)) >>= \case
     Just rep -> do
       cs <- genCs
-      Just . CsViolationWithCtx cs . ProgramNotFound rep <$> liftIO getSearchPath
+      Just . CsViolationWithCtx cs . ProgramNotFound (text rep) <$> liftIO getSearchPath
     Nothing ->
       spCmd (programName pcs) helpKey
         (spCmd (programName pcs) ("--hheellppaoesnthqkxsth" : helpKey)
