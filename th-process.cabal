@@ -30,6 +30,7 @@ library
     System.Process.Th.CallSpec.Type
     System.Process.Th.CallSpec.Verify
     System.Process.Th.OrphanArbitrary
+    System.Process.Th.Predicate
     System.Process.Th.Predicate.InDir
     System.Process.Th.Predicate.InFile
     System.Process.Th.Predicate.Regex

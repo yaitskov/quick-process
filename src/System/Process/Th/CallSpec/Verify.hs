@@ -18,8 +18,9 @@ import System.IO.Temp (withSystemTempDirectory)
 import System.Process (readProcessWithExitCode)
 import System.Process.Th.CallEffect
 import System.Process.Th.CallSpec
-import System.Process.Th.Predicate.InFile
-import System.Process.Th.Predicate.InDir
+import System.Process.Th.Predicate
+import System.Process.Th.Predicate.InFile ()
+import System.Process.Th.Predicate.InDir ()
 import System.Process.Th.Prelude hiding (Type, lift)
 
 
@@ -77,10 +78,9 @@ verifyWithActiveMethods inArgLocators outArgLocators activeVerMethods pcs iterat
 -- the one after it in the list.
 concatM :: (Monad m) => [a -> m a] -> (a -> m a)
 concatM fs = foldr (>=>) return fs
-{-# SPECIALIZE concatM :: [a -> IO a] -> (a -> IO a) #-}
 
 validateInSandbox ::
-  forall w m cs. (M m, CallSpec cs, {- MonadIO w, MonadWriter [FilePath] w,-}  WriterT [FilePath] m ~ w) =>
+  forall w m cs. (M m, CallSpec cs, WriterT [FilePath] m ~ w) =>
   ArgCollector w ->
   ArgCollector w ->
   Proxy cs ->
@@ -118,7 +118,7 @@ validateInSandbox inArgLocators outArgLocators pcs !iterations
 
     doIn projectDir () = do
       cs <- liftIO (generate (arbitrary @cs))
-      inFiles <- execWriterT (gmapM (inArgLocators >=> findRefinedDirs) cs)
+      inFiles <- execWriterT (gmapM inArgLocators cs)
       -- absolute path is an issue for generator
       -- though process in docker is run under root - high chance to pass ;)
       -- quick hack is to use  odd size in Gen to avoid absolute path it Sandbox mode

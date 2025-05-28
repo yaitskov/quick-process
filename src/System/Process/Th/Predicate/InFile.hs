@@ -4,14 +4,13 @@
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE EmptyDataDeriving #-}
-{-# LANGUAGE RankNTypes #-}
 
 module System.Process.Th.Predicate.InFile where
 
 import Control.Monad.Writer.Strict
+import System.Process.Th.Predicate
 import System.Process.Th.Prelude
 import System.Process.Th.TdfaToSbvRegex as P
-import System.Process.Th.CallEffect
 import System.Process.Th.Sbv.Arbitrary
 import System.Process.Th.CallArgument (NeList)
 import Text.Regex.TDFA ((=~))
@@ -48,12 +47,6 @@ genFilePathBy _ =
         then "^[^/\x0000-\x001F]+([.][a-z]{1,4})?$"
         else "^[^/\x0000-\x001F]+[.]" <> ext <> "$")
 
-refinErr :: (Predicate p a, Show a) => a -> Refined p a
-refinErr v =
-  case refine v of
-    Left e -> error $ "Satisfing value [" <> show v <> "] is no valid: " <> show e
-    Right vv -> vv
-
 instance {-# OVERLAPPING #-}
   KnownSymbol e => Arbitrary (Refined (InFile e) FilePath) where
   arbitrary =
@@ -68,16 +61,6 @@ instance {-# OVERLAPPING #-}
   KnownSymbol e => Arbitrary (Refined (InFile e) (NeList FilePath)) where
   arbitrary =
     sized $ \n -> refinErr <$> mapM (\_ -> genFilePathBy $ Proxy @e) (0 :| take n [1::Int ..])
-
-data Ts (x :: Maybe TimeReference) (y :: k)
-data UxFsPerm = UxFsPerm Natural
-data Perm (x :: UxFsPerm) (y :: k)
-
-type Foo = Ts (Just LaunchTime) (InFile "xml")
-
-type Bar = Perm ('UxFsPerm 0) (InFile "csv")
-type FooBar = Ts Nothing (Perm ('UxFsPerm 0777) (InFile "json"))
-
 
 data OutFile (ext :: Symbol)
 
@@ -106,14 +89,6 @@ instance {-# OVERLAPPING #-}
         Left e -> error $ "Satisfing value [" <> show sv <> "] is no valid: " <> show e
         Right vv -> pure vv
 
-type ArgCollector m = forall v. Data v => v -> m v
-
-class RefinedInArgLocator x where
-  locateRefinedInArg :: (MonadIO m, MonadWriter [FilePath] m) => Proxy x -> ArgCollector m
-
-class RefinedOutArgLocator x where
-  locateRefinedOutArg :: (MonadIO m, MonadWriter [FilePath] m) => Proxy x -> ArgCollector m
-
 findRefinedStrings :: forall v p m x.
   ( Typeable p
   , MonadWriter [FilePath] m
@@ -130,7 +105,6 @@ findRefinedStrings _ f x
   , Just R.HRefl <- R.eqTypeRep  rInFile (R.typeRep :: R.TypeRep p)
   = let fp = unrefine x in tell (f fp) >> pure x
   | otherwise = pure x
-
 
 instance RefinedInArgLocator (Refined (InFile e) FilePath) where
   locateRefinedInArg _ = findRefinedStrings (Proxy @InFile) pure

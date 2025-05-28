@@ -8,7 +8,8 @@ module System.Process.Th.Predicate.InDir where
 
 import Data.Typeable (eqT)
 import System.Directory
-import System.Process.Th.Predicate.InFile
+import System.Process.Th.Predicate
+import System.Process.Th.Predicate.InFile ( genFilePathBy )
 import System.Process.Th.Prelude
 import Text.Regex.TDFA ((=~))
 import Type.Reflection ((:~:)(Refl))
@@ -29,7 +30,11 @@ instance {-# OVERLAPPING #-} Arbitrary (Refined InDir FilePath) where
 findRefinedDirs :: forall m x. (MonadIO m, Data x) => x -> m x
 findRefinedDirs x
   | Just Refl <- eqT @x @(Refined InDir FilePath) =
-      let fp = unrefine x in
-        liftIO (createDirectoryIfMissing True fp) >> pure x
+      let fp = unrefine x in do
+        liftIO (createDirectoryIfMissing True fp)
+        pure x
   | otherwise =
       pure x
+
+instance RefinedInArgLocator (Refined InDir FilePath) where
+  locateRefinedInArg _ = findRefinedDirs
