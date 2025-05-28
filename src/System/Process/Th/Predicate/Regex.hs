@@ -2,6 +2,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 module System.Process.Th.Predicate.Regex where
 
+import System.Process.Th.Predicate
 import System.Process.Th.Prelude
 import System.Process.Th.Sbv.Arbitrary
 import System.Process.Th.TdfaToSbvRegex as P
@@ -22,10 +23,7 @@ instance {-# OVERLAPPING #-}
 
   arbitrary =
     let rx = symbolVal (Proxy @p) in do
-      sv <- findStringByRegex (parse rx)
-      case refine sv of
-        Left e -> error $ "Satisfing value [" <> show sv <> "] is no valid: " <> show e
-        Right vv -> pure vv
+      refinErr <$> findStringByRegex (parse rx)
 
 type FsPath = Regex "^([/~]|(~[/]|[/])?[^/\x0000-\x001F]+([/][^/\x0000-\x001F]+)*[/]?)$"
 type FsPath2 = Regex "^([/~]|(~[/]|[/])?[a-zA-Z0-9._ -]+([/][a-zA-Z0-9._ -]+)*[/]?)$"

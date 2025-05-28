@@ -10,10 +10,11 @@ refinErr v =
     Left e -> error $ "Satisfing value [" <> show v <> "] is no valid: " <> show e
     Right vv -> vv
 
-type ArgCollector m = forall v. Data v => v -> m v
+type ArgCollector m =
+  (MonadIO m, MonadWriter [FilePath] m) => forall v. Data v => v -> m v
 
 class RefinedInArgLocator x where
-  locateRefinedInArg :: (MonadIO m, MonadWriter [FilePath] m) => Proxy x -> ArgCollector m
+  locateRefinedInArg :: Proxy x -> ArgCollector m
 
 class RefinedOutArgLocator x where
-  locateRefinedOutArg :: (MonadIO m, MonadWriter [FilePath] m) => Proxy x -> ArgCollector m
+  locateRefinedOutArg :: Proxy x -> ArgCollector m
