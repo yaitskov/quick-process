@@ -4,6 +4,7 @@
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE EmptyDataDeriving #-}
+{-# LANGUAGE RankNTypes #-}
 
 module System.Process.Th.Predicate.InFile where
 
@@ -105,21 +106,13 @@ instance {-# OVERLAPPING #-}
         Left e -> error $ "Satisfing value [" <> show sv <> "] is no valid: " <> show e
         Right vv -> pure vv
 
--- findRefinedStrings :: forall p m x.
---   ( Typeable p
---   , MonadWriter [FilePath] m
---   , MonadIO m
---   , Typeable x
---   , Data x
---   ) => Proxy p -> x -> m x
--- findRefinedStrings _ x
---   | _rRefined `R.App` rif@(R.TypeRep @tif) `R.App` _rString <- R.TypeRep @x
---   , R.TypeRep <- R.typeRepKind rif
---   , Just Refl <- eqT @x @(Refined tif String)
---   , rInFile `R.App` _rExt <- R.TypeRep @tif
---   , Just R.HRefl <- R.eqTypeRep  rInFile (R.typeRep :: R.TypeRep p)
---   = let fp = unrefine x in tell [fp] >> pure x
---   | otherwise = pure x
+type ArgCollector m = forall v. Data v => v -> m v
+
+class RefinedInArgLocator x where
+  locateRefinedInArg :: (MonadIO m, MonadWriter [FilePath] m) => Proxy x -> ArgCollector m
+
+class RefinedOutArgLocator x where
+  locateRefinedOutArg :: (MonadIO m, MonadWriter [FilePath] m) => Proxy x -> ArgCollector m
 
 findRefinedStrings :: forall v p m x.
   ( Typeable p
@@ -139,11 +132,11 @@ findRefinedStrings _ f x
   | otherwise = pure x
 
 
-findInFile :: forall m x. (MonadWriter [FilePath] m, MonadIO m, Data x) => x -> m x
-findInFile =
-  findRefinedStrings (Proxy @InFile) id >=>
-  findRefinedStrings @(NeList FilePath) (Proxy @InFile) toList >=>
-  findRefinedStrings (Proxy @InFile) pure
-
-findOutFile :: forall m x. (MonadWriter [FilePath] m, MonadIO m, Data x) => x -> m x
-findOutFile = findRefinedStrings (Proxy @OutFile) pure
+instance RefinedInArgLocator (Refined (InFile e) FilePath) where
+  locateRefinedInArg _ = findRefinedStrings (Proxy @InFile) pure
+instance RefinedInArgLocator (Refined (InFile e) (NeList FilePath)) where
+  locateRefinedInArg _ = findRefinedStrings @(NeList FilePath) (Proxy @InFile) toList
+instance RefinedInArgLocator (Refined (InFile e) [FilePath]) where
+  locateRefinedInArg _ = findRefinedStrings (Proxy @InFile) id
+instance RefinedOutArgLocator (Refined (OutFile e) FilePath) where
+  locateRefinedOutArg _ = findRefinedStrings (Proxy @OutFile) pure

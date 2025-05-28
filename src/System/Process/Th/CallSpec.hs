@@ -69,8 +69,7 @@ genCallSpec ::
   (FoldrConstr l (Maybe VarBangType), FoldrConstr l Exp, Show (HList l)) =>
   [VerificationMethod] -> String -> HList l -> Q [Dec]
 genCallSpec verMethods progName l = do
-  runIO . whenNothingM_ (findExecutable progName) . fail
-    $ "Program " <> show progName <> " is not found"
+  runIO . whenNothingM_ (findExecutable progName) . fail $ "Program " <> show progName <> " is not found"
   maybe err (g . mkName') (programNameToHsIdentifier progName)
   where
     err = fail $ "Call spec name is bad: " <> show progName <> " " <> show l
