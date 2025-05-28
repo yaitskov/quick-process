@@ -10,6 +10,6 @@ instance Arbitrary NodeType where
   arbitrary = genericArbitraryU
 
 instance CallArgument NodeType where
-  toExecString = Just . \case
+  toExecString = pure . \case
     FileNode -> "f"
     DirNode -> "d"

@@ -1,4 +1,4 @@
-{-# OPTIONS_GHC -ddump-splices #-}
+-- {-# OPTIONS_GHC -ddump-splices #-}
 {-# LANGUAGE TemplateHaskell #-}
 module System.Process.Th.Test.CallSpec.VarArg.Refined where
 

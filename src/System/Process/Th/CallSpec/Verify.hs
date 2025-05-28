@@ -141,13 +141,13 @@ verifyTrailingHelp ::
   Int ->
   m (Maybe CsViolationWithCtx)
 verifyTrailingHelp pcs iterations =
-  liftIO (findExecutable (programName pcs)) >>= \case
-    Just rep -> do
+  liftIO (findExecutable progName) >>= \case
+    Nothing -> do
       cs <- genCs
-      Just . CsViolationWithCtx cs . ProgramNotFound (text rep) <$> liftIO getSearchPath
-    Nothing ->
-      spCmd (programName pcs) helpKey
-        (spCmd (programName pcs) ("--hheellppaoesnthqkxsth" : helpKey)
+      Just . CsViolationWithCtx cs . ProgramNotFound (text progName) <$> liftIO getSearchPath
+    Just _ -> do
+      spCmd progName helpKey
+        (spCmd progName ("--hheellppaoesnthqkxsth" : helpKey)
            (do cs <- genCs
                pure . Just $ CsViolationWithCtx cs HelpKeyIgnored)
            (\_ -> go iterations))
@@ -155,6 +155,7 @@ verifyTrailingHelp pcs iterations =
             cs <- genCs
             pure . Just . CsViolationWithCtx cs $ HelpKeyNotSupported rep)
   where
+    progName = programName pcs
     genCs = liftIO (generate (arbitrary @cs))
     helpKey = ["--help"]
     spCmd pn args onSuccess onFailure = do
@@ -189,8 +190,8 @@ consumeViolations = \case
       case v of
         HelpKeyIgnored -> (text . programName $ pure cs) <> ": help key ignored"
         ProgramNotFound report' pathCopy ->
-          (text . programName $ pure cs) <> " is not found on PATH:" $$ vsep pathCopy
-           $$ "Report:" $$ tab report'
+          "[" <> (text . programName $ pure cs) <> "] is not found on PATH:" $$ tab (vsep pathCopy)
+           $$ "Report:" $$ tab report' $$ ""
         HelpKeyNotSupported report' ->
           "--help key is not supported by [" <> (text . programName $ pure cs) <> "]"
           $$ "Report:" $$ tab report'
