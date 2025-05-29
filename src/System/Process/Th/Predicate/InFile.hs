@@ -1,10 +1,3 @@
-{-# LANGUAGE KindSignatures #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE PolyKinds #-}
-{-# LANGUAGE MonoLocalBinds #-}
-{-# LANGUAGE PatternSynonyms #-}
-{-# LANGUAGE EmptyDataDeriving #-}
-
 module System.Process.Th.Predicate.InFile where
 
 import Control.Monad.Writer.Strict

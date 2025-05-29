@@ -1,4 +1,3 @@
-{-# LANGUAGE RankNTypes #-}
 module System.Process.Th.Predicate where
 
 import Control.Monad.Writer.Strict

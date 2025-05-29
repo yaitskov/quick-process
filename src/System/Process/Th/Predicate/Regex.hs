@@ -1,5 +1,3 @@
-{-# LANGUAGE KindSignatures #-}
-{-# LANGUAGE DeriveGeneric #-}
 module System.Process.Th.Predicate.Regex where
 
 import System.Process.Th.Predicate

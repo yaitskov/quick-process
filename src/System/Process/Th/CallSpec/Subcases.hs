@@ -1,6 +1,3 @@
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-
 module System.Process.Th.CallSpec.Subcases where
 
 import Control.Monad.Writer.Strict

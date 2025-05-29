@@ -1,6 +1,5 @@
 module CallSpecs.Find.Type where
 
-import Generic.Random
 import System.Process.Th
 import System.Process.Th.Prelude
 

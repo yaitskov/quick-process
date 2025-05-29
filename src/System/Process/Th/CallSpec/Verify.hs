@@ -1,8 +1,3 @@
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE ExistentialQuantification #-}
-{-# LANGUAGE MonoLocalBinds #-}
-{-# LANGUAGE ImpredicativeTypes #-}
 module System.Process.Th.CallSpec.Verify where
 
 import Control.Monad.Writer.Strict hiding (lift)

@@ -1,4 +1,3 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module System.Process.Th.CallArgument where
 
 import Control.Monad.Writer.Strict

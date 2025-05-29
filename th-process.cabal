@@ -20,7 +20,26 @@ source-repository head
   location:
     https://github.com/yaitskov/th-process.git
 
+common base
+  default-language: GHC2024
+  ghc-options: -Wall
+  default-extensions:
+    DefaultSignatures
+    NoImplicitPrelude
+    OverloadedStrings
+    TemplateHaskell
+  build-depends:
+      HList
+    , QuickCheck
+    , base >=4 && <5
+    , bytestring
+    , generic-lens
+    , lens
+    , refined
+    , relude
 library
+  import: base
+  hs-source-dirs: src
   exposed-modules:
     System.Process.Th
     System.Process.Th.CallEffect
@@ -31,6 +50,7 @@ library
     System.Process.Th.CallSpec.Verify
     System.Process.Th.OrphanArbitrary
     System.Process.Th.Predicate
+    System.Process.Th.Predicate.ImplDir
     System.Process.Th.Predicate.InDir
     System.Process.Th.Predicate.InFile
     System.Process.Th.Predicate.Regex
@@ -39,61 +59,28 @@ library
     System.Process.Th.Sbv.Arbitrary
     System.Process.Th.TdfaToSbvRegex
   build-depends:
-      HList
-    , QuickCheck
-    , base >=4 && <5
-    , bytestring
-    , casing
+      casing
     , conduit
     , conduit-find
     , containers
     , directory
     , filepath
     , generic-random
-    , ghc
     , mtl
     , pretty
     , process
-    , random
-    , refined
     , regex-compat
     , regex-tdfa
-    , relude
     , safe-exceptions
     , sbv
-    , syb
     , template-haskell
     , temporary
-    , text
     , th-utilities
     , trace-embrace
     , unix
 
-  hs-source-dirs: src
-  default-language: Haskell2010
-  ghc-options: -Wall
-  default-extensions:
-    BangPatterns
-    ConstraintKinds
-    DataKinds
-    DefaultSignatures
-    DeriveDataTypeable
-    FlexibleContexts
-    FlexibleInstances
-    LambdaCase
-    MultiParamTypeClasses
-    NoImplicitPrelude
-    NoMonomorphismRestriction
-    OverloadedStrings
-    ImportQualifiedPost
-    ScopedTypeVariables
-    TemplateHaskell
-    TupleSections
-    TypeApplications
-    TypeOperators
-    TypeSynonymInstances
-
 test-suite verify-call-specs
+  import: base
   type: exitcode-stdio-1.0
   main-is: VerifyCallSpecs.hs
   other-modules:
@@ -101,88 +88,11 @@ test-suite verify-call-specs
     CallSpecs.Find.Type
   hs-source-dirs:
     verify-call-specs
-  default-extensions:
-    LambdaCase
-    OverloadedStrings
-    OverloadedLabels
-    BangPatterns
-    BinaryLiterals
-    ConstrainedClassMethods
-    ConstraintKinds
-    DataKinds
-    DeriveDataTypeable
-    DeriveFoldable
-    DeriveFunctor
-    DeriveGeneric
-    DeriveLift
-    DeriveTraversable
-    EmptyCase
-    EmptyDataDeriving
-    ExistentialQuantification
-    ExplicitForAll
-    FlexibleContexts
-    FlexibleInstances
-    GeneralizedNewtypeDeriving
-    HexFloatLiterals
-    InstanceSigs
-    ImportQualifiedPost
-    KindSignatures
-    MultiParamTypeClasses
-    NamedFieldPuns
-    NamedWildCards
-    NoImplicitPrelude
-    NumericUnderscores
-    PolyKinds
-    PostfixOperators
-    RankNTypes
-    ScopedTypeVariables
-    StandaloneDeriving
-    StandaloneKindSignatures
-    TupleSections
-    TypeApplications
-    TypeOperators
-    TypeSynonymInstances
-  ghc-options: -Wall -dynamic -rtsopts -threaded -main-is VerifyCallSpecs
-  build-depends:
-      Glob
-    , HList
-    , HUnit
-    , QuickCheck
-    , base
-    , bytestring
-    , containers
-    , data-default
-    , directory
-    , errors
-    , exceptions
-    , fmt
-    , formatting
-    , generic-lens
-    , generic-random
-    , lens
-    , process
-    , quickcheck-instances
-    , random
-    , th-utilities
-    , refined
-    , relude
-    , sbv
-    , tasty
-    , tasty-discover
-    , tasty-expected-failure
-    , tasty-hunit
-    , tasty-quickcheck
-    , template-haskell
-    , temporary
-    , text
-    , th-lift-instances
-    , th-process
-    , unix
-    , unliftio
-    , unordered-containers
-  default-language: Haskell2010
+  ghc-options: -Wall -rtsopts -threaded -main-is VerifyCallSpecs
+  build-depends: th-process
 
 test-suite sandbox-effect
+  import: base
   type: exitcode-stdio-1.0
   main-is: SandBoxEffect.hs
   other-modules:
@@ -191,88 +101,11 @@ test-suite sandbox-effect
     CallSpecs.FindCases
   hs-source-dirs:
     sandbox-effect
-  default-extensions:
-    LambdaCase
-    OverloadedStrings
-    OverloadedLabels
-    BangPatterns
-    BinaryLiterals
-    ConstrainedClassMethods
-    ConstraintKinds
-    DataKinds
-    DeriveDataTypeable
-    DeriveFoldable
-    DeriveFunctor
-    DeriveGeneric
-    DeriveLift
-    DeriveTraversable
-    EmptyCase
-    EmptyDataDeriving
-    ExistentialQuantification
-    ExplicitForAll
-    FlexibleContexts
-    FlexibleInstances
-    GeneralizedNewtypeDeriving
-    HexFloatLiterals
-    InstanceSigs
-    ImportQualifiedPost
-    KindSignatures
-    MultiParamTypeClasses
-    NamedFieldPuns
-    NamedWildCards
-    NoImplicitPrelude
-    NumericUnderscores
-    PolyKinds
-    PostfixOperators
-    RankNTypes
-    ScopedTypeVariables
-    StandaloneDeriving
-    StandaloneKindSignatures
-    TupleSections
-    TypeApplications
-    TypeOperators
-    TypeSynonymInstances
-  ghc-options: -Wall -dynamic -rtsopts -threaded -main-is SandBoxEffect
-  build-depends:
-      Glob
-    , HList
-    , HUnit
-    , QuickCheck
-    , base
-    , bytestring
-    , containers
-    , data-default
-    , directory
-    , errors
-    , exceptions
-    , fmt
-    , formatting
-    , generic-lens
-    , generic-random
-    , lens
-    , process
-    , quickcheck-instances
-    , random
-    , th-utilities
-    , refined
-    , relude
-    , sbv
-    , tasty
-    , tasty-discover
-    , tasty-expected-failure
-    , tasty-hunit
-    , tasty-quickcheck
-    , template-haskell
-    , temporary
-    , text
-    , th-lift-instances
-    , th-process
-    , unix
-    , unliftio
-    , unordered-containers
-  default-language: Haskell2010
+  ghc-options: -Wall -rtsopts -threaded -main-is SandBoxEffect
+  build-depends: th-process
 
 test-suite test
+  import: base
   type: exitcode-stdio-1.0
   main-is: Driver.hs
   other-modules:
@@ -288,83 +121,17 @@ test-suite test
     Paths_th_process
   hs-source-dirs:
     test
-  default-extensions:
-    LambdaCase
-    OverloadedStrings
-    OverloadedLabels
-    BangPatterns
-    BinaryLiterals
-    ConstrainedClassMethods
-    ConstraintKinds
-    DataKinds
-    DeriveDataTypeable
-    DeriveFoldable
-    DeriveFunctor
-    DeriveGeneric
-    DeriveLift
-    DeriveTraversable
-    EmptyCase
-    EmptyDataDeriving
-    ExistentialQuantification
-    ExplicitForAll
-    FlexibleContexts
-    FlexibleInstances
-    GeneralizedNewtypeDeriving
-    HexFloatLiterals
-    InstanceSigs
-    ImportQualifiedPost
-    KindSignatures
-    MultiParamTypeClasses
-    NamedFieldPuns
-    NamedWildCards
-    NoImplicitPrelude
-    NumericUnderscores
-    PolyKinds
-    PostfixOperators
-    RankNTypes
-    ScopedTypeVariables
-    StandaloneDeriving
-    StandaloneKindSignatures
-    TupleSections
-    TypeApplications
-    TypeOperators
-    TypeSynonymInstances
-  ghc-options: -Wall -dynamic -rtsopts -threaded -main-is Driver
+  ghc-options: -Wall -rtsopts -threaded -main-is Driver
   build-depends:
-      Glob
-    , HList
-    , HUnit
-    , QuickCheck
-    , base
-    , bytestring
-    , containers
-    , data-default
-    , directory
-    , errors
-    , exceptions
-    , fmt
-    , formatting
-    , generic-lens
-    , generic-random
-    , lens
-    , process
+      directory
     , quickcheck-instances
-    , random
     , th-utilities
-    , refined
-    , relude
-    , sbv
     , tasty
     , tasty-discover
-    , tasty-expected-failure
     , tasty-hunit
     , tasty-quickcheck
     , template-haskell
     , temporary
-    , text
     , th-lift-instances
     , th-process
-    , unix
     , unliftio
-    , unordered-containers
-  default-language: Haskell2010

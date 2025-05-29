@@ -50,3 +50,10 @@ data CallEffect
   | StdOutputCe OutMatcher
   | StdErrorCe OutMatcher
   deriving (Show, Eq)
+
+-- | instances are generated for types with CallSpec and Subcases
+-- The class is introduced because,
+-- expected effects don't have fields in a CallSpec record
+class CallSpecEffect cse where
+  -- call after callSpec in the same directory
+  unsatisfiedEffects :: MonadIO m => cse -> m [CallEffect]

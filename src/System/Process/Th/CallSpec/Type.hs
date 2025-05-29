@@ -1,5 +1,3 @@
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE DeriveLift #-}
 module System.Process.Th.CallSpec.Type where
 
 import System.Process.Th.Prelude

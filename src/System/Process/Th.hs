@@ -1,6 +1,3 @@
-{-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE NoFieldSelectors #-}
-{-# LANGUAGE MonoLocalBinds #-} -- elim warning
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module System.Process.Th
   ( module M

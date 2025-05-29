@@ -1,9 +1,3 @@
-{-# LANGUAGE KindSignatures #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE PolyKinds #-}
-{-# LANGUAGE MonoLocalBinds #-}
-{-# LANGUAGE EmptyDataDeriving #-}
-
 module System.Process.Th.Predicate.InDir where
 
 import Data.Typeable (eqT)
