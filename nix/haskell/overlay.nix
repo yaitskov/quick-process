@@ -16,7 +16,6 @@ in hfinal: hprev:
     (dontCheck (hfinal.callCabal2nix a.name a.source { }))) [
       { name = "th-utilities";  source = sources.th-utilities; }
       { name = "HList";  source = sources.HList; }
-      { name = "refined";  source = sources.refined; }
       { name = "conduit-find";  source = sources.conduit-find; }
     ])) // {
       "th-lock" = hfinal.callHackageDirect

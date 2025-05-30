@@ -35,8 +35,29 @@ common base
     , bytestring
     , generic-lens
     , lens
-    , refined
     , relude
+
+-- https://github.com/nikita-volkov/refined/pull/112
+library refined-internal
+  import: base
+  hs-source-dirs: refined
+  default-extensions:
+    ImplicitPrelude
+  cpp-options: -DHAVE_QUICKCHECK
+  exposed-modules:
+    Refined
+  other-modules:
+    Refined.Unsafe
+    Refined.Unsafe.Type
+  build-depends:
+      deepseq          >= 1.4
+    , exceptions       >= 0.8
+    , hashable         >= 1.0
+    , mtl
+    , template-haskell
+    , text             >= 1.2
+    , these-skinny     >= 0.7.5
+
 library
   import: base
   hs-source-dirs: src
@@ -69,6 +90,7 @@ library
     , mtl
     , pretty
     , process
+    , refined-internal
     , regex-compat
     , regex-tdfa
     , safe-exceptions
@@ -102,7 +124,9 @@ test-suite sandbox-effect
   hs-source-dirs:
     sandbox-effect
   ghc-options: -Wall -rtsopts -threaded -main-is SandBoxEffect
-  build-depends: th-process
+  build-depends:
+      th-process
+    , refined-internal
 
 test-suite test
   import: base
@@ -125,6 +149,7 @@ test-suite test
   build-depends:
       directory
     , quickcheck-instances
+    , refined-internal
     , th-utilities
     , tasty
     , tasty-discover
