@@ -26,10 +26,10 @@ prop_Mkdir_args :: Mkdir -> Property
 prop_Mkdir_args cs = programArgs cs === [ "--help" ]
 
 
-$(genCallSpec [TrailingHelpValidate] "/bin/rmdir" (ConstArg "-x" .*. ConstArg "-v" .*. ConstArg "--help" .*. HNil))
+$(genCallSpec [TrailingHelpValidate] "rmdir" (ConstArg "-x" .*. ConstArg "-v" .*. ConstArg "--help" .*. HNil))
 
-prop_BinRmdir_name :: BinRmdir -> Property
-prop_BinRmdir_name cs = programName (pure cs) === "/bin/rmdir"
+prop_Rmdir_name :: Rmdir -> Property
+prop_Rmdir_name cs = programName (pure cs) === "rmdir"
 
-prop_BinRmdir_args :: BinRmdir -> Property
-prop_BinRmdir_args cs = programArgs cs === [ "-x", "-v", "--help" ]
+prop_Rmdir_args :: Rmdir -> Property
+prop_Rmdir_args cs = programArgs cs === [ "-x", "-v", "--help" ]
