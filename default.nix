@@ -16,8 +16,9 @@ let
   };
 
   sources = [
-    "^src.*$"
-    "^test.*$"
+    "^(trace-embrace.yaml|src|test).*$"
+    "^(sandbox-effect|verify-call-specs).*"
+    "^(refined|conduit-find).*"
     "^.*\\.cabal$"
   ];
 
