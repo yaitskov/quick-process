@@ -33,7 +33,7 @@ common base
     OverloadedStrings
     TemplateHaskell
   build-depends:
-      HList
+      HList >= 0.5.4.0
     , QuickCheck
     , base >=4 && <5
     , bytestring
