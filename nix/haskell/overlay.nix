@@ -14,9 +14,14 @@ in hfinal: hprev:
 (listToAttrs (map (a:
   nameValuePair a.name
     (dontCheck (hfinal.callCabal2nix a.name a.source { }))) [
-      { name = "th-utilities";  source = sources.th-utilities; }
       { name = "HList";  source = sources.HList; }
     ])) // {
+      "th-utilities" = hfinal.callHackageDirect
+        { pkg = "th-utilities";
+          ver = "0.2.5.2";
+          sha256 = "sha256-IEl2Uzsv/fr+546jCIDqUvcRZA/QRm6Xe0cmahMdcnA=";
+        } {};
+
       "th-lock" = hfinal.callHackageDirect
         { pkg = "th-lock";
           ver = "0.0.4";

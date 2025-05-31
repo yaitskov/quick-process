@@ -1,20 +1,24 @@
 {
-  "th-utilities": {
-    "branch": "master",
-    "repo": "file:///home/dan/pro/haskell/th-utilities",
-    "rev": "a23f715b932c1b4f49cabc41694c08b16b0e7ff8",
-    "type": "git"
-  },
-  "HList": {
-    "branch": "master",
-    "repo": "file:///home/dan/pro/haskell/hlist",
-    "rev": "e688f11d7432c812c2b238464401a86f588f81e1",
-    "type": "git"
-  },
-  "nixpkgs": {
-      "branch": "master",
-      "repo": "/home/dan/pro/nixpkgs",
-      "rev": "e7a98efedcc1d0a2a8455580c562b20718c36444",
-      "type": "git"
-  }
+    "HList": {
+        "branch": "master",
+        "repo": "https://bitbucket.org/HList/hlist",
+        "rev": "e688f11d7432c812c2b238464401a86f588f81e1",
+        "type": "git"
+    },
+    "nixpkgs": {
+        "branch": "master",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "e7a98efedcc1d0a2a8455580c562b20718c36444",
+        "sha256": "sha256:0pcvllrvnbr2s1sfc8gizz864b1wwz9mac3ri3fmkrxvajwlmmdd",
+        "type": "tarball",
+        "url": "https://github.com/NixOS/nixpkgs/archive/e7a98efedcc1d0a2a8455580c562b20718c36444.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "upload-doc-to-hackage": {
+        "sha256": "0r1q21dngyalrm0ad204y470wr3s89mssbw9qi195hpgbp8qs8d2",
+        "type": "tarball",
+        "url": "https://github.com/yaitskov/upload-doc-to-hackage/archive/a180b14b21610ce39f296ad7b9dcf6dfe9ac69cf.tar.gz",
+        "url_template": "https://github.com/yaitskov/upload-doc-to-hackage/archive/a180b14b21610ce39f296ad7b9dcf6dfe9ac69cf.tar.gz"
+    }
 }
