@@ -20,6 +20,10 @@ source-repository head
   location:
     https://github.com/yaitskov/th-process.git
 
+Flag leafopt
+  Description: Enable leaf optimization
+  Default: False
+
 common base
   default-language: GHC2024
   ghc-options: -Wall
@@ -36,6 +40,40 @@ common base
     , generic-lens
     , lens
     , relude
+
+-- https://github.com/erikd/conduit-find/pull/17
+library conduit-find-internal
+  import: base
+  hs-source-dirs: conduit-find
+  ghc-options: -Wall -funbox-strict-fields
+  if os(linux) && flag(leafopt)
+     cpp-options: -DLEAFOPT=1
+  default-extensions:
+    ImplicitPrelude
+  exposed-modules:
+      Data.Cond, Data.Conduit.Find
+  build-depends:
+      conduit              >= 1.2
+    , conduit-extra
+    , conduit-combinators
+    , attoparsec
+    , unix-compat          >= 0.4.1.1
+    , text                 >= 2.0
+    , regex-posix
+    , mtl
+    , semigroups
+    , exceptions           >= 0.6
+    , time
+    , resourcet            >= 1.1
+    , streaming-commons
+    , transformers
+    , transformers-base
+    , transformers-either
+    , mmorph
+    , either
+    , monad-control        >= 1.0
+    , filepath
+    , unliftio-core
 
 -- https://github.com/nikita-volkov/refined/pull/112
 library refined-internal
@@ -82,7 +120,7 @@ library
   build-depends:
       casing
     , conduit
-    , conduit-find
+    , conduit-find-internal
     , containers
     , directory
     , filepath

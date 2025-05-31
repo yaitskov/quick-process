@@ -16,7 +16,6 @@ in hfinal: hprev:
     (dontCheck (hfinal.callCabal2nix a.name a.source { }))) [
       { name = "th-utilities";  source = sources.th-utilities; }
       { name = "HList";  source = sources.HList; }
-      { name = "conduit-find";  source = sources.conduit-find; }
     ])) // {
       "th-lock" = hfinal.callHackageDirect
         { pkg = "th-lock";
@@ -51,11 +50,6 @@ in hfinal: hprev:
              testDepends = (o.testDepends or []) ++ [hfinal.z3];
              extraLibraries = (o.extraLibraries or []) ++ [hfinal.z3];
              doCheck = false;
-             checkPhase = ''
-               echo oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo;
-               which z3;
-             '';
-             # testToolDepends = o.testToolDepends or [] ++ [hfinal.z3];
             })
       ;
     }

@@ -5,12 +5,6 @@
     "rev": "a23f715b932c1b4f49cabc41694c08b16b0e7ff8",
     "type": "git"
   },
-  "conduit-find": {
-    "branch": "master",
-    "repo": "file:///home/dan/pro/haskell/conduit-find",
-    "rev": "e5b9ac21b5566e45267e4f39f552d1fffb47db47",
-    "type": "git"
-  },
   "HList": {
     "branch": "master",
     "repo": "file:///home/dan/pro/haskell/hlist",
