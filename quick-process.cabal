@@ -1,24 +1,24 @@
 cabal-version: 3.0
-name:          th-process
+name:          quick-process
 version:       0.0.1
 synopsis:      Run external processes verified at compilation
 description:   The library checks program name during compilation,
                generates exec spec to be verified in tests, before installation
                or before launch.
 
-homepage:      http://github.com/yaitskov/th-process
+homepage:      http://github.com/yaitskov/quick-process
 license:       BSD-3-Clause
 author:        Daniil Iaitskov
 maintainer:    dyaitskov@gmail.com
 copyright:     Daniil Iaitkov 2025
 category:      System
 build-type:    Simple
-bug-reports:   https://github.com/yaitskov/th-process/issues
+bug-reports:   https://github.com/yaitskov/quick-process/issues
 source-repository head
   type:
     git
   location:
-    https://github.com/yaitskov/th-process.git
+    https://github.com/yaitskov/quick-process.git
 
 Flag leafopt
   Description: Enable leaf optimization
@@ -149,7 +149,7 @@ test-suite verify-call-specs
   hs-source-dirs:
     verify-call-specs
   ghc-options: -Wall -rtsopts -threaded -main-is VerifyCallSpecs
-  build-depends: th-process
+  build-depends: quick-process
 
 test-suite sandbox-effect
   import: base
@@ -163,7 +163,7 @@ test-suite sandbox-effect
     sandbox-effect
   ghc-options: -Wall -rtsopts -threaded -main-is SandBoxEffect
   build-depends:
-      th-process
+      quick-process
     , refined-internal
 
 test-suite test
@@ -178,9 +178,9 @@ test-suite test
     System.Process.Th.Test.CallSpec.VarArg.Refined
     System.Process.Th.Test.Prelude
     System.Process.Th.Test.Th
-    Paths_th_process
+    Paths_quick_process
   autogen-modules:
-    Paths_th_process
+    Paths_quick_process
   hs-source-dirs:
     test
   ghc-options: -Wall -rtsopts -threaded -main-is Driver
@@ -196,5 +196,5 @@ test-suite test
     , template-haskell
     , temporary
     , th-lift-instances
-    , th-process
+    , quick-process
     , unliftio

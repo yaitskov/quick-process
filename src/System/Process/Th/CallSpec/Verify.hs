@@ -84,7 +84,7 @@ validateInSandbox ::
 validateInSandbox inArgLocators outArgLocators pcs !iterations
   | iterations <= 0 = pure Nothing
   | otherwise =
-    withSystemTempDirectory "th-process" go >>= \case
+    withSystemTempDirectory "quick-process" go >>= \case
       Nothing -> validateInSandbox inArgLocators outArgLocators pcs $ iterations - 1
       Just e -> pure $ Just e
   where

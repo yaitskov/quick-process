@@ -21,10 +21,10 @@ let
     "^.*\\.cabal$"
   ];
 
-  base = hsPkgs.callCabal2nix "th-process" (lib.sourceByRegex ./. sources) { };
-  th-process-overlay = _hf: _hp: { th-process = base; };
+  base = hsPkgs.callCabal2nix "quick-process" (lib.sourceByRegex ./. sources) { };
+  quick-process-overlay = _hf: _hp: { quick-process = base; };
   baseHaskellPkgs = pkgs.haskell.packages.${ghc};
-  hsOverlays = [ hsPkgSetOverlay th-process-overlay ];
+  hsOverlays = [ hsPkgSetOverlay quick-process-overlay ];
   hsPkgs = baseHaskellPkgs.override (old: {
     overrides =
       builtins.foldl' pkgs.lib.composeExtensions (old.overrides or (_: _: { }))
@@ -35,7 +35,7 @@ let
     (_: { enableSharedExecutables = true; });
 
   shell = hsPkgs.shellFor {
-    packages = p: [ p.th-process ];
+    packages = p: [ p.quick-process ];
     nativeBuildInputs = (with pkgs; [
       cabal-install
       ghcid
@@ -49,11 +49,11 @@ let
     '';
   };
 
-  th-process = hsPkgs.th-process;
+  quick-process = hsPkgs.quick-process;
 in {
   inherit hsPkgs;
   inherit ghc;
   inherit pkgs;
   inherit shell;
-  inherit th-process;
+  inherit quick-process;
 }

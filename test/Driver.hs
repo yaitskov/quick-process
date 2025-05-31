@@ -9,4 +9,4 @@ main = defaultMain =<< testTree
     testTree :: IO TestTree
     testTree = do
       tests <- Discovery.tests
-      pure $ testGroup "th-process" [ tests ]
+      pure $ testGroup "quick-process" [ tests ]
