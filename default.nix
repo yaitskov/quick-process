@@ -15,6 +15,11 @@ let
     inherit (nix) sources;
   };
 
+  importZ3 = drv:
+    drv.overrideAttrs (oa: {
+      propagatedBuildInputs = (oa.propagatedBuildInputs or []) ++ [pkgs.z3];
+    });
+
   sources = [
     "^(trace-embrace.yaml|src|test).*$"
     "^(sandbox-effect|verify-call-specs).*"
@@ -23,7 +28,7 @@ let
   ];
 
   base = hsPkgs.callCabal2nix "quick-process" (lib.sourceByRegex ./. sources) { };
-  quick-process-overlay = _hf: _hp: { quick-process = base; };
+  quick-process-overlay = _hf: _hp: { quick-process = importZ3 base; };
   baseHaskellPkgs = pkgs.haskell.packages.${ghc};
   hsOverlays = [ hsPkgSetOverlay quick-process-overlay ];
   hsPkgs = baseHaskellPkgs.override (old: {
