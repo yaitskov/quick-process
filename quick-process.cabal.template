@@ -31,13 +31,13 @@ common base
     OverloadedStrings
     TemplateHaskell
   build-depends:
-      HList >= 0.5.4.0
-    , QuickCheck
-    , base >=4 && <5
-    , bytestring
-    , generic-lens
-    , lens
-    , relude
+      HList >= 0.5.4.0 && < 1
+    , QuickCheck >= 2.14.3 && < 3
+    , base >=4 && < 5
+    , bytestring >= 0.12.1 && < 1
+    , generic-lens >= 2.2.2 && < 3
+    , lens >= 5.3.2 && < 6
+    , relude >= 1.2.2 && < 2
 
 -- https://github.com/erikd/conduit-find/pull/17
 library conduit-find-internal
@@ -51,27 +51,27 @@ library conduit-find-internal
   exposed-modules:
       Data.Cond, Data.Conduit.Find
   build-depends:
-      conduit              >= 1.2
-    , conduit-extra
-    , conduit-combinators
-    , attoparsec
-    , unix-compat          >= 0.4.1.1
-    , text                 >= 2.0
-    , regex-posix
-    , mtl
-    , semigroups
-    , exceptions           >= 0.6
-    , time
-    , resourcet            >= 1.1
-    , streaming-commons
-    , transformers
-    , transformers-base
-    , transformers-either
-    , mmorph
-    , either
-    , monad-control        >= 1.0
-    , filepath
-    , unliftio-core
+      attoparsec           >= 0.14.4 && < 1
+    , conduit              >= 1.2 && < 2
+    , conduit-combinators  >= 1.3.0 && < 2
+    , conduit-extra        >= 1.3.6 && < 2
+    , either               >= 5.0.2 && < 6
+    , exceptions           >= 0.6 && < 1
+    , filepath             >= 1.5.2 && < 2
+    , mmorph               >= 1.2.0 && < 2
+    , monad-control        >= 1.0 && < 2
+    , mtl                  >= 2.3.1 && < 3
+    , regex-posix          >= 0.96.0 && < 1
+    , resourcet            >= 1.1 && < 2
+    , semigroups           >= 0.20 && < 1
+    , streaming-commons    >= 0.2.2 && < 1
+    , text                 >= 2.0 && < 3
+    , time                 >= 1.12.2 && < 2
+    , transformers         >= 0.6.1 && < 1
+    , transformers-base    >= 0.4.6 && < 1
+    , transformers-either  >= 0.1.4 && < 1
+    , unix-compat          >= 0.4.1.1 && < 1
+    , unliftio-core        >= 0.2.1 && < 1
 
 -- https://github.com/nikita-volkov/refined/pull/112
 library refined-internal
@@ -86,13 +86,13 @@ library refined-internal
     Refined.Unsafe
     Refined.Unsafe.Type
   build-depends:
-      deepseq          >= 1.4
-    , exceptions       >= 0.8
-    , hashable         >= 1.0
-    , mtl
-    , template-haskell
-    , text             >= 1.2
-    , these-skinny     >= 0.7.5
+      deepseq          >= 1.4 && < 2
+    , exceptions       < 1
+    , hashable         >= 1.0 && < 2
+    , mtl              < 3
+    , template-haskell < 3
+    , text             < 3
+    , these-skinny     < 1
 
 library
   import: base
@@ -118,26 +118,26 @@ library
     System.Process.Quick.Sbv.Arbitrary
     System.Process.Quick.TdfaToSbvRegex
   build-depends:
-      casing
-    , conduit
+      casing                  < 1
+    , conduit                 < 2
     , conduit-find-internal
-    , containers
-    , directory
-    , filepath
-    , generic-random
-    , mtl
-    , pretty
-    , process
+    , containers              < 1
+    , directory               < 2
+    , filepath                < 2
+    , generic-random          < 2
+    , mtl                     < 3
+    , pretty                  < 2
+    , process                 < 2
     , refined-internal
-    , regex-compat
-    , regex-tdfa
-    , safe-exceptions
-    , sbv
-    , template-haskell
-    , temporary
-    , th-utilities
-    , trace-embrace
-    , unix
+    , regex-compat            < 1
+    , regex-tdfa              < 2
+    , safe-exceptions         < 1
+    , sbv                     < 12
+    , template-haskell        < 3
+    , temporary               < 2
+    , th-utilities            < 1
+    , trace-embrace           < 2
+    , unix                    < 3
 
 test-suite verify-call-specs
   import: base
