@@ -12,6 +12,11 @@ copyright:     Daniil Iaitkov 2025
 category:      System
 build-type:    Simple
 bug-reports:   https://github.com/yaitskov/quick-process/issues
+extra-doc-files:
+  changelog.md
+tested-with:
+  GHC == 9.10.1
+
 source-repository head
   type:
     git

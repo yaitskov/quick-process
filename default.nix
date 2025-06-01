@@ -24,6 +24,7 @@ let
     "^(trace-embrace.yaml|src|test).*$"
     "^(sandbox-effect|verify-call-specs).*"
     "^(refined|conduit-find).*"
+    "^changelog[.]md$"
     "^.*\\.cabal$"
   ];
 
