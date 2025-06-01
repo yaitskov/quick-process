@@ -16,6 +16,8 @@ in hfinal: hprev:
     (dontCheck (hfinal.callCabal2nix a.name a.source { }))) [
       { name = "HList";  source = sources.HList; }
     ])) // {
+      "upload-doc-to-hackage" = hfinal.callPackage sources.upload-doc-to-hackage {};
+
       "th-utilities" = hfinal.callHackageDirect
         { pkg = "th-utilities";
           ver = "0.2.5.2";

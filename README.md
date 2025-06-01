@@ -1,5 +1,8 @@
 # quick-process
 
+The library checks program name during compilation, generates exec
+spec to be verified in tests, before installation or before launch.
+
 ## Motivation
 The strongest trait of Haskell language is its type system.  This
 powerful type system gives infinite opportunities for experimenting
@@ -105,13 +108,15 @@ either.  Help key validation support can be checked.
 
 ### Constant argument
 
-``` haskell
+```haskell
 {-# LANGUAGE TemplateHaskell #-}
 module CallSpecs where
 import System.Process.Th
 
 $(genCallSpec [TrailingHelpValidate, SandboxValidate] "date" (ConstArg "+%Y" .*. HNil))
--------------------------------------------------------------------
+```
+
+``` haskell
 {-# LANGUAGE TemplateHaskell #-}
 module CallSpecTest where
 
@@ -124,7 +129,9 @@ main = $(discoverAndVerifyCallSpecs
                     , SandboxValidate
                     ])
           3)
--------------------------------------------------------------------
+```
+
+```haskell
 {-# LANGUAGE TemplateHaskell #-}
 module Main where
 
@@ -148,7 +155,7 @@ from process library, but accepts typed input instead of strings.
 
 ### Variable argument
 
-``` haskell
+```haskell
 {-# LANGUAGE TemplateHaskell #-}
 module CallSpecs where
 import System.Process.Th
@@ -161,7 +168,9 @@ $(genCallSpec
   .*. HNil
   )
  )
--------------------------------------------------------------------
+```
+
+```haskell
 {-# LANGUAGE TemplateHaskell #-}
 module CallSpecTest where
 
@@ -174,7 +183,9 @@ main = $(discoverAndVerifyCallSpecs
                     , SandboxValidate
                     ])
           100)
--------------------------------------------------------------------
+```
+
+```haskell
 {-# LANGUAGE TemplateHaskell #-}
 module Main where
 
@@ -201,7 +212,7 @@ terminates.
 
 Call spec can be composed of sum types.
 
-``` haskell
+```haskell
 {-# LANGUAGE TemplateHaskell #-}
 module CallSpecs where
 import System.Process.Th

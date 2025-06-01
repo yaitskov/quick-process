@@ -1,0 +1,201 @@
+cabal-version: 3.0
+name:          quick-process
+version:       0.0.1
+synopsis:      Run external processes verified at compilation/installation
+description:
+
+homepage:      http://github.com/yaitskov/quick-process
+license:       BSD-3-Clause
+author:        Daniil Iaitskov
+maintainer:    dyaitskov@gmail.com
+copyright:     Daniil Iaitkov 2025
+category:      System
+build-type:    Simple
+bug-reports:   https://github.com/yaitskov/quick-process/issues
+source-repository head
+  type:
+    git
+  location:
+    https://github.com/yaitskov/quick-process.git
+
+Flag leafopt
+  Description: Enable leaf optimization
+  Default: False
+
+common base
+  default-language: GHC2024
+  ghc-options: -Wall
+  default-extensions:
+    DefaultSignatures
+    NoImplicitPrelude
+    OverloadedStrings
+    TemplateHaskell
+  build-depends:
+      HList >= 0.5.4.0
+    , QuickCheck
+    , base >=4 && <5
+    , bytestring
+    , generic-lens
+    , lens
+    , relude
+
+-- https://github.com/erikd/conduit-find/pull/17
+library conduit-find-internal
+  import: base
+  hs-source-dirs: conduit-find
+  ghc-options: -Wall -funbox-strict-fields
+  if os(linux) && flag(leafopt)
+     cpp-options: -DLEAFOPT=1
+  default-extensions:
+    ImplicitPrelude
+  exposed-modules:
+      Data.Cond, Data.Conduit.Find
+  build-depends:
+      conduit              >= 1.2
+    , conduit-extra
+    , conduit-combinators
+    , attoparsec
+    , unix-compat          >= 0.4.1.1
+    , text                 >= 2.0
+    , regex-posix
+    , mtl
+    , semigroups
+    , exceptions           >= 0.6
+    , time
+    , resourcet            >= 1.1
+    , streaming-commons
+    , transformers
+    , transformers-base
+    , transformers-either
+    , mmorph
+    , either
+    , monad-control        >= 1.0
+    , filepath
+    , unliftio-core
+
+-- https://github.com/nikita-volkov/refined/pull/112
+library refined-internal
+  import: base
+  hs-source-dirs: refined
+  default-extensions:
+    ImplicitPrelude
+  cpp-options: -DHAVE_QUICKCHECK
+  exposed-modules:
+    Refined
+  other-modules:
+    Refined.Unsafe
+    Refined.Unsafe.Type
+  build-depends:
+      deepseq          >= 1.4
+    , exceptions       >= 0.8
+    , hashable         >= 1.0
+    , mtl
+    , template-haskell
+    , text             >= 1.2
+    , these-skinny     >= 0.7.5
+
+library
+  import: base
+  hs-source-dirs: src
+  exposed-modules:
+    System.Process.Th
+    System.Process.Th.CallEffect
+    System.Process.Th.CallArgument
+    System.Process.Th.CallSpec
+    System.Process.Th.CallSpec.Run
+    System.Process.Th.CallSpec.Subcases
+    System.Process.Th.CallSpec.Type
+    System.Process.Th.CallSpec.Verify
+    System.Process.Th.OrphanArbitrary
+    System.Process.Th.Predicate
+    System.Process.Th.Predicate.ImplDir
+    System.Process.Th.Predicate.InDir
+    System.Process.Th.Predicate.InFile
+    System.Process.Th.Predicate.LowerCase
+    System.Process.Th.Predicate.Regex
+    System.Process.Th.Prelude
+    System.Process.Th.Pretty
+    System.Process.Th.Sbv.Arbitrary
+    System.Process.Th.TdfaToSbvRegex
+  build-depends:
+      casing
+    , conduit
+    , conduit-find-internal
+    , containers
+    , directory
+    , filepath
+    , generic-random
+    , mtl
+    , pretty
+    , process
+    , refined-internal
+    , regex-compat
+    , regex-tdfa
+    , safe-exceptions
+    , sbv
+    , template-haskell
+    , temporary
+    , th-utilities
+    , trace-embrace
+    , unix
+
+test-suite verify-call-specs
+  import: base
+  type: exitcode-stdio-1.0
+  main-is: VerifyCallSpecs.hs
+  other-modules:
+    CallSpecs.Find
+    CallSpecs.Find.Type
+  hs-source-dirs:
+    verify-call-specs
+  ghc-options: -Wall -rtsopts -threaded -main-is VerifyCallSpecs
+  build-depends: quick-process
+
+test-suite sandbox-effect
+  import: base
+  type: exitcode-stdio-1.0
+  main-is: SandBoxEffect.hs
+  other-modules:
+    CallSpecs.CpOne
+    CallSpecs.CpManyToDir
+    CallSpecs.Date
+    CallSpecs.FindCases
+  hs-source-dirs:
+    sandbox-effect
+  ghc-options: -Wall -rtsopts -threaded -main-is SandBoxEffect
+  build-depends:
+      quick-process
+    , refined-internal
+
+test-suite test
+  import: base
+  type: exitcode-stdio-1.0
+  main-is: Driver.hs
+  other-modules:
+    Discovery
+    System.Process.Th.Test.CallSpec
+    System.Process.Th.Test.CallSpec.Const
+    System.Process.Th.Test.CallSpec.VarArg
+    System.Process.Th.Test.CallSpec.VarArg.Refined
+    System.Process.Th.Test.Prelude
+    System.Process.Th.Test.Th
+    Paths_quick_process
+  autogen-modules:
+    Paths_quick_process
+  hs-source-dirs:
+    test
+  ghc-options: -Wall -rtsopts -threaded -main-is Driver
+  build-depends:
+      directory
+    , quickcheck-instances
+    , refined-internal
+    , th-utilities
+    , tasty
+    , tasty-discover
+    , tasty-hunit
+    , tasty-quickcheck
+    , template-haskell
+    , temporary
+    , th-lift-instances
+    , quick-process
+    , unliftio
