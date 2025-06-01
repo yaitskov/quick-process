@@ -5,8 +5,8 @@ import CallSpecs.CpOne ()
 import CallSpecs.CpManyToDir ()
 import CallSpecs.Date
 import CallSpecs.FindCases ()
-import System.Process.Th
-import System.Process.Th.Prelude
+import System.Process.Quick
+import System.Process.Quick.Prelude
 
 main :: IO ()
 main = do

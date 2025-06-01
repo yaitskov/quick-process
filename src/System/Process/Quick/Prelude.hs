@@ -1,0 +1,21 @@
+{-# OPTIONS_HADDOCK hide #-}
+module System.Process.Quick.Prelude (module M, liftIO1) where
+
+import Control.Exception.Safe as M (MonadMask, MonadCatch, bracket, tryIO, try, tryAny)
+import Data.Data as M (Data, gmapM)
+import Data.Char as M (isAlphaNum, isAlpha, isLetter, isLower, toLower)
+import Data.HList as M (typeRep)
+import Data.List as M (isSuffixOf)
+import Data.Set as M (member)
+import Generic.Random as M (genericArbitraryU)
+import Relude as M hiding (Predicate)
+import Relude.Extra as M (toPairs)
+import Test.QuickCheck as M (Gen, Arbitrary (..), generate, chooseInt, sized, elements, listOf)
+import System.Process.Quick.Pretty as M
+import System.Process as M (ProcessHandle, CreateProcess (..), readCreateProcess, readCreateProcessWithExitCode)
+import System.Exit as M (ExitCode (..))
+import Refined as M (Refined, unrefine, refine, Predicate (..), throwRefineOtherException)
+import GHC.TypeLits as M (Symbol, KnownSymbol (..), symbolVal)
+
+liftIO1 :: MonadIO m => (a -> IO b) -> a -> m b
+liftIO1 = (.) liftIO

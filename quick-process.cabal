@@ -102,7 +102,7 @@ description:
     
     > {-# LANGUAGE TemplateHaskell #-}
     > module CallSpecs where
-    > import System.Process.Th
+    > import System.Process.Quick
     >
     > $(genCallSpec [TrailingHelpValidate, SandboxValidate] "date" (ConstArg "+%Y" .*. HNil))
     
@@ -110,7 +110,7 @@ description:
     > module CallSpecTest where
     >
     > import CallSpecs
-    > import System.Process.Th
+    > import System.Process.Quick
     >
     > main :: IO ()
     > main = $(discoverAndVerifyCallSpecs
@@ -123,7 +123,7 @@ description:
     > module Main where
     >
     > import CallSpecs
-    > import System.Process.Th
+    > import System.Process.Quick
     >
     > main :: IO ()
     > main = callProcess Date
@@ -144,7 +144,7 @@ description:
     
     > {-# LANGUAGE TemplateHaskell #-}
     > module CallSpecs where
-    > import System.Process.Th
+    > import System.Process.Quick
     >
     > $(genCallSpec
     >   [TrailingHelpValidate, SandboxValidate]
@@ -159,7 +159,7 @@ description:
     > module CallSpecTest where
     >
     > import CallSpecs
-    > import System.Process.Th
+    > import System.Process.Quick
     >
     > main :: IO ()
     > main = $(discoverAndVerifyCallSpecs
@@ -172,7 +172,7 @@ description:
     > module Main where
     >
     > import CallSpecs
-    > import System.Process.Th
+    > import System.Process.Quick
     >
     > main :: IO ()
     > main =
@@ -194,7 +194,7 @@ description:
     
     > {-# LANGUAGE TemplateHaskell #-}
     > module CallSpecs where
-    > import System.Process.Th
+    > import System.Process.Quick
     >
     > $(genCallSpec
     >   [TrailingHelpValidate, SandboxValidate]
@@ -309,25 +309,25 @@ library
   import: base
   hs-source-dirs: src
   exposed-modules:
-    System.Process.Th
-    System.Process.Th.CallEffect
-    System.Process.Th.CallArgument
-    System.Process.Th.CallSpec
-    System.Process.Th.CallSpec.Run
-    System.Process.Th.CallSpec.Subcases
-    System.Process.Th.CallSpec.Type
-    System.Process.Th.CallSpec.Verify
-    System.Process.Th.OrphanArbitrary
-    System.Process.Th.Predicate
-    System.Process.Th.Predicate.ImplDir
-    System.Process.Th.Predicate.InDir
-    System.Process.Th.Predicate.InFile
-    System.Process.Th.Predicate.LowerCase
-    System.Process.Th.Predicate.Regex
-    System.Process.Th.Prelude
-    System.Process.Th.Pretty
-    System.Process.Th.Sbv.Arbitrary
-    System.Process.Th.TdfaToSbvRegex
+    System.Process.Quick
+    System.Process.Quick.CallEffect
+    System.Process.Quick.CallArgument
+    System.Process.Quick.CallSpec
+    System.Process.Quick.CallSpec.Run
+    System.Process.Quick.CallSpec.Subcases
+    System.Process.Quick.CallSpec.Type
+    System.Process.Quick.CallSpec.Verify
+    System.Process.Quick.OrphanArbitrary
+    System.Process.Quick.Predicate
+    System.Process.Quick.Predicate.ImplDir
+    System.Process.Quick.Predicate.InDir
+    System.Process.Quick.Predicate.InFile
+    System.Process.Quick.Predicate.LowerCase
+    System.Process.Quick.Predicate.Regex
+    System.Process.Quick.Prelude
+    System.Process.Quick.Pretty
+    System.Process.Quick.Sbv.Arbitrary
+    System.Process.Quick.TdfaToSbvRegex
   build-depends:
       casing
     , conduit
@@ -384,12 +384,12 @@ test-suite test
   main-is: Driver.hs
   other-modules:
     Discovery
-    System.Process.Th.Test.CallSpec
-    System.Process.Th.Test.CallSpec.Const
-    System.Process.Th.Test.CallSpec.VarArg
-    System.Process.Th.Test.CallSpec.VarArg.Refined
-    System.Process.Th.Test.Prelude
-    System.Process.Th.Test.Th
+    System.Process.Quick.Test.CallSpec
+    System.Process.Quick.Test.CallSpec.Const
+    System.Process.Quick.Test.CallSpec.VarArg
+    System.Process.Quick.Test.CallSpec.VarArg.Refined
+    System.Process.Quick.Test.Prelude
+    System.Process.Quick.Test.Th
     Paths_quick_process
   autogen-modules:
     Paths_quick_process

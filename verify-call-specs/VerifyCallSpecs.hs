@@ -4,8 +4,8 @@
 module VerifyCallSpecs where
 
 import CallSpecs.Find ()
-import System.Process.Th
-import System.Process.Th.Prelude
+import System.Process.Quick
+import System.Process.Quick.Prelude
 
 
 -- goRef :: forall x. (Typeable x, Data x) => x -> IO x

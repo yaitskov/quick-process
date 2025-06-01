@@ -1,7 +1,7 @@
 module Driver where
 
 import qualified Discovery
-import System.Process.Th.Test.Prelude
+import System.Process.Quick.Test.Prelude
 
 main :: IO ()
 main = defaultMain =<< testTree

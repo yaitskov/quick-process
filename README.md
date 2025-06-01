@@ -111,7 +111,7 @@ either.  Help key validation support can be checked.
 ```haskell
 {-# LANGUAGE TemplateHaskell #-}
 module CallSpecs where
-import System.Process.Th
+import System.Process.Quick
 
 $(genCallSpec [TrailingHelpValidate, SandboxValidate] "date" (ConstArg "+%Y" .*. HNil))
 ```
@@ -121,7 +121,7 @@ $(genCallSpec [TrailingHelpValidate, SandboxValidate] "date" (ConstArg "+%Y" .*.
 module CallSpecTest where
 
 import CallSpecs
-import System.Process.Th
+import System.Process.Quick
 
 main :: IO ()
 main = $(discoverAndVerifyCallSpecs
@@ -136,7 +136,7 @@ main = $(discoverAndVerifyCallSpecs
 module Main where
 
 import CallSpecs
-import System.Process.Th
+import System.Process.Quick
 
 main :: IO ()
 main = callProcess Date
@@ -158,7 +158,7 @@ from process library, but accepts typed input instead of strings.
 ```haskell
 {-# LANGUAGE TemplateHaskell #-}
 module CallSpecs where
-import System.Process.Th
+import System.Process.Quick
 
 $(genCallSpec
   [TrailingHelpValidate, SandboxValidate]
@@ -175,7 +175,7 @@ $(genCallSpec
 module CallSpecTest where
 
 import CallSpecs
-import System.Process.Th
+import System.Process.Quick
 
 main :: IO ()
 main = $(discoverAndVerifyCallSpecs
@@ -190,7 +190,7 @@ main = $(discoverAndVerifyCallSpecs
 module Main where
 
 import CallSpecs
-import System.Process.Th
+import System.Process.Quick
 
 main :: IO ()
 main =
@@ -215,7 +215,7 @@ Call spec can be composed of sum types.
 ```haskell
 {-# LANGUAGE TemplateHaskell #-}
 module CallSpecs where
-import System.Process.Th
+import System.Process.Quick
 
 $(genCallSpec
   [TrailingHelpValidate, SandboxValidate]

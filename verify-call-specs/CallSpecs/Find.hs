@@ -3,8 +3,8 @@
 module CallSpecs.Find where
 
 import CallSpecs.Find.Type
-import System.Process.Th
-import System.Process.Th.Prelude hiding (NonEmpty, Type)
+import System.Process.Quick
+import System.Process.Quick.Prelude hiding (NonEmpty, Type)
 
 type DirPath = Refined FsPath String
 

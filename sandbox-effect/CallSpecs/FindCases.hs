@@ -2,8 +2,8 @@
 {-# LANGUAGE TemplateHaskell #-}
 module CallSpecs.FindCases where
 
-import System.Process.Th
-import System.Process.Th.Prelude
+import System.Process.Quick
+import System.Process.Quick.Prelude
 
 
 $(genCallSpec
