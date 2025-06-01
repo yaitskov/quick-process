@@ -104,6 +104,7 @@ library
     System.Process.Th.CallEffect
     System.Process.Th.CallArgument
     System.Process.Th.CallSpec
+    System.Process.Th.CallSpec.Run
     System.Process.Th.CallSpec.Subcases
     System.Process.Th.CallSpec.Type
     System.Process.Th.CallSpec.Verify
@@ -158,6 +159,7 @@ test-suite sandbox-effect
   other-modules:
     CallSpecs.CpOne
     CallSpecs.CpManyToDir
+    CallSpecs.Date
     CallSpecs.FindCases
   hs-source-dirs:
     sandbox-effect

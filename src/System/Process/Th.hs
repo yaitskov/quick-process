@@ -8,9 +8,10 @@ import Data.Char
 import Data.HList as M hiding (Arity)
 import Language.Haskell.TH as M
 import Refined as M
-import System.Process as SP
+import System.Process qualified as SP
 import System.Process.Th.CallArgument as M
 import System.Process.Th.CallSpec as M
+import System.Process.Th.CallSpec.Run as M
 import System.Process.Th.CallSpec.Subcases as M
 import System.Process.Th.CallSpec.Verify as M
 import System.Process.Th.Predicate as M
