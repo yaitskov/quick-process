@@ -49,6 +49,7 @@ newtype QR a
 instance Quote QR where
   newName n = QR $ lift (newName n)
 
+-- data
 class (Typeable a) => CallArgumentGen a where
   -- | field name in the record; constant value does not have a field
   cArgName :: a -> Maybe String
@@ -57,6 +58,9 @@ class (Typeable a) => CallArgumentGen a where
   progArgExpr :: a -> QR Exp
   -- | TH field definition of call argument in CallSpec record
   fieldExpr :: a -> QR (Maybe VarBangType)
+  -- | Exp type is '\v -> m [CallEffect]'
+  sideEffectCheckExpr :: a -> QR Exp
+  sideEffectCheckExpr _ = [| pure . const [] |]
 
 newtype ConstArg = ConstArg String deriving (Eq, Show, Typeable)
 instance CallArgumentGen ConstArg where

@@ -38,14 +38,9 @@ in hfinal: hprev:
 
       "trace-embrace" = hfinal.callHackageDirect
         { pkg = "trace-embrace";
-          ver = "1.0.11";
-          sha256 = "sha256-ggkNOAhOGScDPgberlOltMZKmHA4t15PGDtBKEeMYf0=";
+          ver = "1.2.0";
+          sha256 = "sha256-O3865lJryaDfDM4NQVHNu45DI/vNxofY4/+RVcnJlPg=";
         } {};
-      # "HList" = hfinal.callHackageDirect
-      #   { pkg = "HList";
-      #     ver = "0.5.4.0";
-      #     sha256 = "sha256-nzDQfZC22cEZ02661MKnRYUdKFOdq8lRg+ENfrA0PDk=";
-      #   } {};
       "sbv" = overrideCabal
         (hfinal.callHackageDirect
           { pkg = "sbv";

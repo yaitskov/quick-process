@@ -13,9 +13,10 @@ import Data.HList
 import Language.Haskell.TH as TH
 import Language.Haskell.TH.Syntax qualified as THS
 import System.Directory
-import System.Process.Quick.CallArgument
-import System.Process.Quick.CallSpec.Type as E
-import System.Process.Quick.Prelude
+import System.Process.Th.CallArgument
+
+import System.Process.Th.CallSpec.Type as E
+import System.Process.Th.Prelude
 import Text.Casing
 import Text.Regex
 
@@ -60,6 +61,9 @@ genCallSpecInstance verMethods recordName progName l =
       [| concat . flap $(listE (hMapM (Fun progArgExpr :: Fun CallArgumentGen (QR Exp)) l)) |]
   , funD' 'verificationMethods [ [p|_|] ] (THS.lift $ sort verMethods)
   ]
+
+-- genCallSpecEffectInstance :: FoldrConstr l Exp => [VerificationMethod] -> Name -> String -> HList l -> QR Dec
+-- genCallSpecEffectInstance
 
 mkName' :: NonEmptyStr -> Name
 mkName' = mkName . toList

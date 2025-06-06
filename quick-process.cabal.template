@@ -1,6 +1,6 @@
 cabal-version: 3.0
 name:          quick-process
-version:       0.0.1
+version:       0.0.2
 synopsis:      Run external processes verified at compilation/installation
 description:
 
@@ -15,7 +15,7 @@ bug-reports:   https://github.com/yaitskov/quick-process/issues
 extra-doc-files:
   changelog.md
 tested-with:
-  GHC == 9.10.1
+  GHC == 9.10.1, GHC == 9.12.2
 
 source-repository head
   type:
@@ -141,7 +141,7 @@ library
     , template-haskell        < 3
     , temporary               < 2
     , th-utilities            < 1
-    , trace-embrace           < 2
+    , trace-embrace           >= 1.2.0 && < 2
     , unix                    < 3
 
 test-suite verify-call-specs

@@ -55,5 +55,11 @@ data CallEffect
 -- The class is introduced because,
 -- expected effects don't have fields in a CallSpec record
 class CallSpecEffect cse where
-  -- call after callSpec in the same directory
+  -- | call after callSpec in the same directory
   unsatisfiedEffects :: MonadIO m => cse -> m [CallEffect]
+
+
+newtype DirCreated = DirCreated FilePath deriving (Show, Eq, Data, Generic)
+
+-- instance CallSpecEffect DirCreated where
+--   unsatisfiedEffects (DirCreated dp) = do
