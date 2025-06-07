@@ -111,6 +111,9 @@ library
     System.Process.Quick.CallSpec.Subcases
     System.Process.Quick.CallSpec.Type
     System.Process.Quick.CallSpec.Verify
+    System.Process.Quick.CallSpec.Verify.Sandbox
+    System.Process.Quick.CallSpec.Verify.TrailingHelp
+    System.Process.Quick.CallSpec.Verify.Type
     System.Process.Quick.OrphanArbitrary
     System.Process.Quick.Predicate
     System.Process.Quick.Predicate.ImplDir
@@ -122,6 +125,7 @@ library
     System.Process.Quick.Pretty
     System.Process.Quick.Sbv.Arbitrary
     System.Process.Quick.TdfaToSbvRegex
+    System.Process.Quick.Util
   build-depends:
       casing                  < 1
     , conduit                 < 2
@@ -130,8 +134,9 @@ library
     , directory               < 2
     , filepath                < 2
     , generic-random          < 2
+    , monad-time              < 1
     , mtl                     < 3
-    , pretty                  < 2
+    , pretty-simple           < 5
     , process                 < 2
     , refined-internal
     , regex-compat            < 1
@@ -141,8 +146,10 @@ library
     , template-haskell        < 3
     , temporary               < 2
     , th-utilities            < 1
+    , time                    < 2
     , trace-embrace           >= 1.2.0 && < 2
     , unix                    < 3
+    , wl-pprint-text          < 2
 
 test-suite verify-call-specs
   import: base
@@ -165,6 +172,8 @@ test-suite sandbox-effect
     CallSpecs.CpManyToDir
     CallSpecs.Date
     CallSpecs.FindCases
+    CallSpecs.GitInit
+    CallSpecs.GitInitExit1
   hs-source-dirs:
     sandbox-effect
   ghc-options: -Wall -rtsopts -threaded -main-is SandBoxEffect

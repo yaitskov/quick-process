@@ -5,6 +5,8 @@ import CallSpecs.CpOne ()
 import CallSpecs.CpManyToDir ()
 import CallSpecs.Date
 import CallSpecs.FindCases ()
+import CallSpecs.GitInit ()
+import CallSpecs.GitInitExit1 ()
 import System.Process.Quick
 import System.Process.Quick.Prelude
 

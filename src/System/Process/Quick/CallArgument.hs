@@ -1,9 +1,12 @@
+
 module System.Process.Quick.CallArgument where
 
 import Control.Monad.Writer.Strict
 import Data.HList
 import Language.Haskell.TH as TH
+import Language.Haskell.TH.Syntax qualified as TH
 import Refined as M hiding (NonEmpty)
+import System.Process.Quick.CallEffect
 import System.Process.Quick.OrphanArbitrary ()
 import System.Process.Quick.Prelude hiding (Text)
 import TH.Utilities qualified as TU
@@ -58,11 +61,17 @@ class (Typeable a) => CallArgumentGen a where
   progArgExpr :: a -> QR Exp
   -- | TH field definition of call argument in CallSpec record
   fieldExpr :: a -> QR (Maybe VarBangType)
-  -- | Exp type is '\v -> m [CallEffect]'
-  sideEffectCheckExpr :: a -> QR Exp
-  sideEffectCheckExpr _ = [| pure . const [] |]
+  -- | Exp type is '\v -> [OutcomeChecker]'
+  outcomeCheckersExpr :: a -> QR Exp
+  outcomeCheckersExpr _ = [| const [] |]
 
-newtype ConstArg = ConstArg String deriving (Eq, Show, Typeable)
+instance CallArgumentGen OutcomeChecker where
+  cArgName _ = Nothing
+  progArgExpr _ = [| const [] |]
+  fieldExpr _ = pure Nothing
+  outcomeCheckersExpr c =  [| pure [$(TH.lift c)] |]
+
+newtype ConstArg = ConstArg String deriving (Eq, Show)
 instance CallArgumentGen ConstArg where
   cArgName _ = Nothing
   progArgExpr (ConstArg c) = [| const [ $(stringE c)] |]
@@ -100,7 +109,7 @@ escapeFieldName = \case
         | otherwise -> filteredFieldName
 
 -- | Command line argument without preceeding key
-newtype VarArg a = VarArg String deriving (Eq, Show, Typeable)
+newtype VarArg a = VarArg String deriving (Eq, Show)
 instance (Typeable a, CallArgument a) => CallArgumentGen (VarArg a) where
   cArgName (VarArg n) = Just n
   progArgExpr (VarArg fieldName) =
@@ -112,7 +121,7 @@ instance (Typeable a, CallArgument a) => CallArgumentGen (VarArg a) where
       atRep = QR . lift $ TU.typeRepToType (typeRep (Proxy @a))
 
 -- | Command line argument prefixed with a key
-newtype KeyArg a = KeyArg String deriving (Eq, Show, Typeable)
+newtype KeyArg a = KeyArg String deriving (Eq, Show)
 instance (Typeable a, CallArgument a) => CallArgumentGen (KeyArg a) where
   cArgName (KeyArg n) = cArgName (VarArg @a n)
   progArgExpr (KeyArg fieldName) =

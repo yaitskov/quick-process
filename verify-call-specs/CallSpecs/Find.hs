@@ -8,4 +8,7 @@ import System.Process.Quick.Prelude hiding (NonEmpty, Type)
 
 type DirPath = Refined FsPath String
 
-$(genCallSpec [TrailingHelpValidate] "find" (ConstArg "-H" .*. VarArg @DirPath "path" .*. KeyArg @NodeType "-type" .*. HNil))
+$(genCallSpec
+  [TrailingHelpValidate]
+  "find"
+  (ConstArg "-H" .*. VarArg @DirPath "path" .*. KeyArg @NodeType "-type" .*. HNil))
