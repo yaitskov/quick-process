@@ -2,32 +2,36 @@ module System.Process.Quick.CallSpec.Verify where
 
 import Control.Monad.Writer.Strict hiding (lift)
 import Data.Text.Lazy qualified as LT
+import Data.Typeable ( TypeRep )
+import Data.Map qualified as M
 import Language.Haskell.TH.Syntax
 import System.Process.Quick.CallSpec
-import System.Process.Quick.CallSpec.Verify.Sandbox ( validateInSandbox )
+import System.Process.Quick.CallSpec.Verify.Sandbox
 import System.Process.Quick.CallSpec.Verify.TrailingHelp ( verifyTrailingHelp )
 import System.Process.Quick.CallSpec.Verify.Type
 import System.Process.Quick.Predicate (ArgCollector, RefinedInArgLocator(..), RefinedOutArgLocator(..))
 import System.Process.Quick.Predicate.InDir ()
 import System.Process.Quick.Predicate.InFile ()
 import System.Process.Quick.Prelude hiding (Type, lift)
+import System.Process.Quick.Prelude qualified as P
 import System.Process.Quick.Util ( M )
 import Text.Pretty.Simple
 
 
 verifyWithActiveMethods ::
-  forall w m cs. (M m, CallSpec cs, WriterT [FilePath] m ~ w) =>
+  forall w m cs. (M m, CallSpec cs, WriterT [FilePath] (CsPerfT m) ~ w) =>
   ArgCollector w ->
   ArgCollector w ->
   Set VerificationMethod ->
   Proxy cs ->
   Int ->
-  m [CsViolationWithCtx]
+  CsPerfT m [CsViolationWithCtx]
 verifyWithActiveMethods inArgLocators outArgLocators activeVerMethods pcs iterations =
   catMaybes <$> mapM go  (filter (`member` activeVerMethods) (verificationMethods pcs))
   where
+    go :: VerificationMethod -> CsPerfT m (Maybe CsViolationWithCtx)
     go = \case
-      TrailingHelpValidate -> verifyTrailingHelp pcs iterations
+      TrailingHelpValidate -> P.lift (verifyTrailingHelp pcs iterations)
       SandboxValidate -> validateInSandbox inArgLocators outArgLocators pcs iterations
 
 -- |Compose a list of monadic actions into one action.  Composes using
@@ -36,10 +40,28 @@ verifyWithActiveMethods inArgLocators outArgLocators activeVerMethods pcs iterat
 concatM :: (Monad m) => [a -> m a] -> (a -> m a)
 concatM fs = foldr (>=>) return fs
 
-consumeViolations :: MonadIO m => [CsViolationWithCtx] -> m ()
-consumeViolations = \case
-  [] ->
-    putStrLn "CallSpecs are valid"
+formatPerfReportLine :: Int -> (TypeRep, CsPerf) -> Doc
+formatPerfReportLine _iterations (typR, csp) =
+  hsep [ fill 29 $ pretty typR
+       , fill 15 . pretty $ getSum (csExeTime csp <> csGenerationTime csp)
+       -- , pretty $ (getSum (csExeTime csp <> csGenerationTime csp) `div` iterations
+       , fill 15 . pretty . getSum $ csGenerationTime csp
+       , fill 15 . pretty . getSum $ csExeTime csp
+       ]
+
+consumeViolations :: MonadIO m => Int -> [CsViolationWithCtx] -> CsPerfT m ()
+consumeViolations iterations = \case
+  [] -> do
+    perfReport <- vcat . fmap (formatPerfReportLine iterations) . reverse . sortWith (^. _2) . M.toList <$> get
+    printDoc $ "CallSpecs are valid" <>
+      tab (linebreak <> hsep [ fill 29 "Call Spec"
+                             , fill 15 "Total"
+                             , fill 15 "Generation"
+                             , fill 15 "Execution"
+                             ] $$
+           "=================================================================" $$
+           perfReport
+          ) <> linebreak
   vis -> do
     let dashes = "-------------------------------------------------------------"
     -- good case for hetftio ??
@@ -78,7 +100,13 @@ discoverAndVerifyCallSpecs activeVerMethods iterations = do
   when (outArgLocators == []) $ putStrLn "Discovered 0 OutArg locators!!!"
   ts <- extractInstanceType <$> reifyInstances ''CallSpec [VarT (mkName "a")]
   when (ts == []) $ putStrLn "Discovered 0 types with CallSpec instance!!!"
-  r <- [| fmap concat (sequence $(ListE <$> (mapM (genCsVerification inArgLocators outArgLocators) ts))) >>= consumeViolations |]
+  !r <- [| void $ runStateT (
+             fmap concat
+               (sequence $(ListE <$> (mapM (genCsVerification
+                                            inArgLocators outArgLocators) ts))) >>=
+             consumeViolations $(lift iterations))
+             (mempty :: Map TypeRep CsPerf)
+        |]
   endedAt <- runIO currentTime
   putStrLn $ "discoverAndVerifyCallSpecs generation took " <> show (endedAt `diffUTCTime` startedAt)
   pure r

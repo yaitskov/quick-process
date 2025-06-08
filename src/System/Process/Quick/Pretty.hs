@@ -12,12 +12,11 @@ module System.Process.Quick.Pretty
   , module PP
   ) where
 
+import Data.Time ( NominalDiffTime )
 import Control.Exception ( IOException )
--- import Control.Exception.Safe
+import Data.Typeable ( TypeRep )
 import GHC.ResponseFile (escapeArgs)
 import Relude
--- import Text.PrettyPrint as PP hiding (hsep, (<>), empty, isEmpty)
--- import Text.PrettyPrint qualified as PP
 import Text.PrettyPrint.Leijen.Text as PP hiding ((<$>), bool, group, hsep, vsep, empty, isEmpty)
 import Text.PrettyPrint.Leijen.Text qualified as PP
 
@@ -33,26 +32,12 @@ doc = pretty --  . show
 
 hsep :: Pretty a => [a] -> Doc
 hsep = PP.hsep . fmap doc
--- {-# INLINE hsep #-}
+{-# INLINE hsep #-}
 
 vsep :: Pretty a => [a] -> Doc
 vsep = vcat . fmap doc
--- {-# INLINE vsep #-}
+{-# INLINE vsep #-}
 
--- instance Pretty Doc where
---   doc = id
---   {-# INLINE doc #-}
--- instance Pretty String where
---   doc = text
---   {-# INLINE doc #-}
--- instance Pretty IOException
--- instance Pretty Int
--- instance Pretty Integer
--- instance Pretty [String]
-
-
--- printDoc :: MonadIO m => Doc -> m ()
--- printDoc :: a -> m ()
 printDoc :: (MonadIO m, Pretty a) => a -> m ()
 printDoc x = liftIO (putDoc $ pretty x)
 
@@ -81,4 +66,10 @@ escArg :: String -> String
 escArg = reverse . drop 1 . reverse . escapeArgs . pure
 
 instance Pretty IOException where
+  pretty = text . show
+
+instance Pretty TypeRep where
+  pretty = text . show
+
+instance Pretty NominalDiffTime where
   pretty = text . show

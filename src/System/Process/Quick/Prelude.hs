@@ -1,14 +1,17 @@
 {-# OPTIONS_HADDOCK hide #-}
 module System.Process.Quick.Prelude (module M, liftIO1) where
 
-import Control.Exception.Safe as M (MonadMask, MonadCatch, bracket, tryIO, try, tryAny)
+import Control.Exception.Safe as M (MonadMask, MonadCatch, bracket, tryIO, try, tryAny, throw)
+import Control.Lens as M (Lens', at, (^.), (.~), (%~), _1, _2)
 import Control.Monad.Time as M (MonadTime(..))
 import Data.Char as M (isAlphaNum, isAlpha, isLetter, isLower, toLower)
 import Data.Data as M (Data, gmapM)
+import Data.Generics.Labels as M ()
 import Data.HList as M (typeRep)
 import Data.List as M (isSuffixOf)
 import Data.Set as M (member)
 import Data.Time.Clock as M (NominalDiffTime, diffUTCTime)
+import Data.Typeable as M (eqT)
 import Debug.TraceEmbrace as M (tr, tw)
 import Generic.Random as M (genericArbitraryU)
 import GHC.TypeLits as M (Symbol, KnownSymbol (..), symbolVal)

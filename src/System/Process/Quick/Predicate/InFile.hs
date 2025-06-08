@@ -9,7 +9,6 @@ import System.Process.Quick.CallArgument (NeList)
 import Text.Regex.TDFA ((=~))
 import Type.Reflection qualified as R
 import Type.Reflection ((:~:)(Refl))
-import Data.Typeable (eqT)
 
 
 data InFile (ext :: Symbol) deriving (Data, Show, Eq, Generic)

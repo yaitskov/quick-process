@@ -1,6 +1,5 @@
 module System.Process.Quick.CallSpec.Verify.Sandbox where
 
-import Control.Exception.Safe
 import Control.Monad.Writer.Strict (execWriterT, WriterT)
 import Data.Conduit (runConduitRes, (.|))
 import Data.Conduit.Find as F
@@ -48,13 +47,25 @@ normalizeOutcomeChecks cs =
     origOutcomeChecks = outcomeCheckers cs
     ecP = \case ExitCodeEqualTo _ -> True ; _ -> False
 
+
+measureX :: forall m cs a. (Typeable cs, M m) =>
+  Proxy cs -> Lens' CsPerf (Sum NominalDiffTime) -> CsPerfT m a -> CsPerfT m a
+measureX pcs l a = do
+  started <- currentTime
+  !r <- a
+  ended <- currentTime
+  modify' (at (typeRep pcs) %~ merge ended started)
+  pure r
+  where
+    merge e s = pure . (l .~ (Sum $ e `diffUTCTime` s)) . fromMaybe mempty
+
 validateInSandbox ::
-  forall w m cs. (M m, CallSpec cs, WriterT [FilePath] m ~ w) =>
+  forall w m cs. (M m, CallSpec cs, WriterT [FilePath] (CsPerfT m) ~ w) =>
   ArgCollector w ->
   ArgCollector w ->
   Proxy cs ->
   Int ->
-  m (Maybe CsViolationWithCtx)
+  CsPerfT m (Maybe CsViolationWithCtx)
 validateInSandbox inArgLocators outArgLocators pcs !iterations
   | iterations <= 0 = pure Nothing
   | otherwise =
@@ -86,14 +97,14 @@ validateInSandbox inArgLocators outArgLocators pcs !iterations
                  -- putStrLn ("File "  <> show origin <> " => " <> show inFile)
 
     doIn projectDir () = do
-      cs <- liftIO (generate (arbitrary @cs))
+      cs <- measureX pcs #csGenerationTime (liftIO (generate (arbitrary @cs)))
       inFiles <- execWriterT (gmapM inArgLocators cs)
       -- absolute path is an issue for generator
       -- though process in docker is run under root - high chance to pass ;)
       -- quick hack is to use  odd size in Gen to avoid absolute path it Sandbox mode
       mapM_ (liftIO1 (genInputFile projectDir)) inFiles
       let nocs = normalizeOutcomeChecks cs
-      tryIO (callProcessAndReport cs) >>= \case
+      tryIO (measureX pcs #csExeTime $ callProcessAndReport cs) >>= \case
         Left e -> throw . CsViolationWithCtx cs . ExceptionThrown $ SomeException e
         Right csr -> mapM (check csr) nocs >>= pure . concat >>=
           \case

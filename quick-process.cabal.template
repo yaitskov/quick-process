@@ -33,6 +33,7 @@ common base
   default-extensions:
     DefaultSignatures
     NoImplicitPrelude
+    OverloadedLabels
     OverloadedStrings
     TemplateHaskell
   build-depends:
@@ -133,6 +134,8 @@ library
     , containers              < 1
     , directory               < 2
     , filepath                < 2
+    , generic-data            < 2
+    , generic-deriving        < 2
     , generic-random          < 2
     , monad-time              < 1
     , mtl                     < 3

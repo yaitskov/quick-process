@@ -1,6 +1,5 @@
 module System.Process.Quick.Predicate.InDir where
 
-import Data.Typeable (eqT)
 import System.Directory
 import System.Process.Quick.Predicate
 import System.Process.Quick.Predicate.InFile ( genFilePathBy )
