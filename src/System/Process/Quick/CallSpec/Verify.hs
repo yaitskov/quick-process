@@ -71,13 +71,17 @@ consumeViolations = \case
 
 discoverAndVerifyCallSpecs :: Set VerificationMethod -> Int -> Q Exp
 discoverAndVerifyCallSpecs activeVerMethods iterations = do
+  startedAt <- runIO currentTime
   inArgLocators <- extractInstanceType <$> reifyInstances ''RefinedInArgLocator [VarT (mkName "b")]
   when (inArgLocators == []) $ putStrLn "Discovered 0 InArg locators!!!"
   outArgLocators <- extractInstanceType <$> reifyInstances ''RefinedOutArgLocator [VarT (mkName "c")]
   when (outArgLocators == []) $ putStrLn "Discovered 0 OutArg locators!!!"
   ts <- extractInstanceType <$> reifyInstances ''CallSpec [VarT (mkName "a")]
   when (ts == []) $ putStrLn "Discovered 0 types with CallSpec instance!!!"
-  [| fmap concat (sequence $(ListE <$> (mapM (genCsVerification inArgLocators outArgLocators) ts))) >>= consumeViolations |]
+  r <- [| fmap concat (sequence $(ListE <$> (mapM (genCsVerification inArgLocators outArgLocators) ts))) >>= consumeViolations |]
+  endedAt <- runIO currentTime
+  putStrLn $ "discoverAndVerifyCallSpecs generation took " <> show (endedAt `diffUTCTime` startedAt)
+  pure r
   where
     getLocator n t = AppE (VarE n) (SigE (ConE 'Proxy) (AppT (ConT ''Proxy) t))
 
