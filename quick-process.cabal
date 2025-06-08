@@ -385,6 +385,7 @@ test-suite sandbox-effect
     CallSpecs.FindCases
     CallSpecs.GitInit
     CallSpecs.GitInitExit1
+    CallSpecs.GitSubcases
   hs-source-dirs:
     sandbox-effect
   ghc-options: -Wall -rtsopts -threaded -main-is SandBoxEffect
