@@ -1,9 +1,11 @@
 module System.Process.Quick.CallSpec.Verify where
 
 import Control.Monad.Writer.Strict hiding (lift)
+import Data.Map qualified as M
+import Data.Multimap.Table (row, rowKeys, rowKeysSet)
+import Data.Set (findMin)
 import Data.Text.Lazy qualified as LT
 import Data.Typeable ( TypeRep )
-import Data.Map qualified as M
 import Language.Haskell.TH.Syntax
 import System.Process.Quick.CallSpec
 import System.Process.Quick.CallSpec.Verify.Sandbox
@@ -31,8 +33,12 @@ verifyWithActiveMethods inArgLocators outArgLocators activeVerMethods pcs iterat
   where
     go :: VerificationMethod -> CsPerfT m (Maybe CsViolationWithCtx)
     go = \case
-      TrailingHelpValidate -> P.lift (verifyTrailingHelp pcs iterations)
-      SandboxValidate -> validateInSandbox inArgLocators outArgLocators pcs iterations
+      TrailingHelpValidate ->
+        measureX pcs TrailingHelpValidate #csTotalTime $
+          P.lift (verifyTrailingHelp pcs iterations)
+      SandboxValidate ->
+        measureX pcs SandboxValidate #csTotalTime $
+          validateInSandbox inArgLocators outArgLocators pcs iterations
 
 -- |Compose a list of monadic actions into one action.  Composes using
 -- ('>=>') - that is, the output of each action is fed to the input of
@@ -40,33 +46,43 @@ verifyWithActiveMethods inArgLocators outArgLocators activeVerMethods pcs iterat
 concatM :: (Monad m) => [a -> m a] -> (a -> m a)
 concatM fs = foldr (>=>) return fs
 
-formatPerfReportLine :: Int -> (TypeRep, CsPerf) -> Doc
-formatPerfReportLine _iterations (typR, csp) =
+formatPerfReportLine :: (TypeRep, CsPerf) -> Doc
+formatPerfReportLine (typR, csp) =
   hsep [ fill 29 $ pretty typR
-       , fill 15 . pretty $ getSum (csExeTime csp <> csGenerationTime csp)
+       , fill 15 . pretty . getSum $ csTotalTime csp
        -- , pretty $ (getSum (csExeTime csp <> csGenerationTime csp) `div` iterations
        , fill 15 . pretty . getSum $ csGenerationTime csp
        , fill 15 . pretty . getSum $ csExeTime csp
        ]
 
+reportFor :: MonadIO m => VerificationMethod -> CsPerfT m Doc
+reportFor vm = do
+  perfStats <- get
+  pure $ tab (linebreak <+> "*** Method: " <+> pretty vm <> linebreak <>
+       hsep [ fill 29 "Call Spec"
+            , fill 15 "Total"
+            , fill 15 "Generation"
+            , fill 15 "Execution"
+            ] $$
+        "=======================================================================" $$
+        (vcat . fmap formatPerfReportLine . reverse . sortWith (^. _2) . M.toList $ row vm perfStats)
+      ) <> linebreak
+
+
 consumeViolations :: MonadIO m => Int -> [CsViolationWithCtx] -> CsPerfT m ()
 consumeViolations iterations = \case
   [] -> do
-    perfReport <- vcat . fmap (formatPerfReportLine iterations) . reverse . sortWith (^. _2) . M.toList <$> get
-    printDoc $ "CallSpecs are valid" <>
-      tab (linebreak <> hsep [ fill 29 "Call Spec"
-                             , fill 15 "Total"
-                             , fill 15 "Generation"
-                             , fill 15 "Execution"
-                             ] $$
-           "=================================================================" $$
-           perfReport
-          ) <> linebreak
+    perfStats <- get
+    reports <- mapM reportFor $ rowKeys perfStats
+    printDoc $ "All of" <+> pretty (M.size $ row (findMin $ rowKeysSet perfStats) perfStats)
+      <+> "CallSpecs are valid due "
+      <+> pretty iterations <+> "tests executed for each" <> fold reports
+
   vis -> do
     let dashes = "-------------------------------------------------------------"
     -- good case for hetftio ??
-    printDoc $ "Error: quick-process found " <> doc (length vis) <> " failed call specs:"
-      $$ (vcat $ zipWith (\i v -> tab ("-- [" <> doc i <> "] " <> dashes $$ printViolation v))
+    printDoc $ "Error: quick-process found" <+> doc (length vis) <+> "failed call specs:"
+      $$ (vcat $ zipWith (\i v -> tab ("-- [" <> doc i <> "]" <+> dashes $$ printViolation v))
                  [1::Int ..] (sortByProgamName vis))
       $$ "-------" <> dashes $$ "End of quick-process violation report" <> linebreak
     exitFailure
@@ -105,7 +121,7 @@ discoverAndVerifyCallSpecs activeVerMethods iterations = do
                (sequence $(ListE <$> (mapM (genCsVerification
                                             inArgLocators outArgLocators) ts))) >>=
              consumeViolations $(lift iterations))
-             (mempty :: Map TypeRep CsPerf)
+             mempty
         |]
   endedAt <- runIO currentTime
   putStrLn $ "discoverAndVerifyCallSpecs generation took " <> show (endedAt `diffUTCTime` startedAt)

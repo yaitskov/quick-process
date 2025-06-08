@@ -1,12 +1,13 @@
 
 module System.Process.Quick.CallSpec.Verify.Type where
 
-import Generic.Data
+import Data.Multimap.Table ( Table )
 import Data.Typeable ( TypeRep )
+import Generic.Data ( gmappend, gmempty )
+import Prelude (show)
 import System.Process.Quick.CallEffect (CallEffect)
-import System.Process.Quick.CallSpec (CallSpec)
+import System.Process.Quick.CallSpec.Type
 import System.Process.Quick.Prelude hiding (show)
-import Prelude
 
 type FailureReport = Doc
 
@@ -35,11 +36,12 @@ instance Exception CsViolationWithCtx
 data CsPerf
   = CsPerf
     { csGenerationTime :: !(Sum NominalDiffTime)
+    , csTotalTime :: !(Sum NominalDiffTime)
     , csExeTime :: !(Sum NominalDiffTime)
     } deriving (Show, Eq, Generic)
 
 instance Ord CsPerf where
-  CsPerf a b `compare` CsPerf c d = (a + b) `compare` (c + d)
+  compare = comparing (^. #csTotalTime)
 
 instance Semigroup CsPerf where
   (<>) = gmappend
@@ -48,4 +50,4 @@ instance Monoid CsPerf where
   mempty = gmempty
 
 
-type CsPerfT m = StateT (Map TypeRep CsPerf) m
+type CsPerfT m = StateT (Table VerificationMethod TypeRep CsPerf) m

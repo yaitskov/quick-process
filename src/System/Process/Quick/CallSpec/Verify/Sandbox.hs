@@ -4,6 +4,7 @@ import Control.Monad.Writer.Strict (execWriterT, WriterT)
 import Data.Conduit (runConduitRes, (.|))
 import Data.Conduit.Find as F
 import Data.Conduit.List qualified as DCL
+import Data.Multimap.Table qualified as T
 import System.Directory
 import System.FilePath (takeDirectory, takeExtension)
 import System.IO.Temp (withSystemTempDirectory)
@@ -49,12 +50,12 @@ normalizeOutcomeChecks cs =
 
 
 measureX :: forall m cs a. (Typeable cs, M m) =>
-  Proxy cs -> Lens' CsPerf (Sum NominalDiffTime) -> CsPerfT m a -> CsPerfT m a
-measureX pcs l a = do
+  Proxy cs -> VerificationMethod -> Lens' CsPerf (Sum NominalDiffTime) -> CsPerfT m a -> CsPerfT m a
+measureX pcs vm l a = do
   started <- currentTime
   !r <- a
   ended <- currentTime
-  modify' (at (typeRep pcs) %~ merge ended started)
+  modify' $ T.alter (merge ended started) vm (typeRep pcs)
   pure r
   where
     merge e s = pure . (l .~ (Sum $ e `diffUTCTime` s)) . fromMaybe mempty
@@ -97,14 +98,14 @@ validateInSandbox inArgLocators outArgLocators pcs !iterations
                  -- putStrLn ("File "  <> show origin <> " => " <> show inFile)
 
     doIn projectDir () = do
-      cs <- measureX pcs #csGenerationTime (liftIO (generate (arbitrary @cs)))
+      cs <- measureX pcs SandboxValidate #csGenerationTime (liftIO (generate (arbitrary @cs)))
       inFiles <- execWriterT (gmapM inArgLocators cs)
       -- absolute path is an issue for generator
       -- though process in docker is run under root - high chance to pass ;)
       -- quick hack is to use  odd size in Gen to avoid absolute path it Sandbox mode
       mapM_ (liftIO1 (genInputFile projectDir)) inFiles
       let nocs = normalizeOutcomeChecks cs
-      tryIO (measureX pcs #csExeTime $ callProcessAndReport cs) >>= \case
+      tryIO (measureX pcs SandboxValidate #csExeTime $ callProcessAndReport cs) >>= \case
         Left e -> throw . CsViolationWithCtx cs . ExceptionThrown $ SomeException e
         Right csr -> mapM (check csr) nocs >>= pure . concat >>=
           \case

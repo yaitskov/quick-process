@@ -1,6 +1,6 @@
 module System.Process.Quick.Test.Prelude (module M) where
 
-import Control.Lens as M ((^.), (^?), at, ix)
+import Control.Lens as M ((^?), ix)
 import Data.HList as M (HList(..), HExtend(..))
 import Refined as M (SizeEqualTo)
 import System.Directory as M (doesFileExist, removeFile)

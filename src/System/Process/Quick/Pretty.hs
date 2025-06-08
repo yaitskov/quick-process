@@ -14,7 +14,7 @@ module System.Process.Quick.Pretty
 
 import Data.Time ( NominalDiffTime )
 import Control.Exception ( IOException )
-import Data.Typeable ( TypeRep )
+import Data.Typeable
 import GHC.ResponseFile (escapeArgs)
 import Relude
 import Text.PrettyPrint.Leijen.Text as PP hiding ((<$>), bool, group, hsep, vsep, empty, isEmpty)
@@ -69,7 +69,9 @@ instance Pretty IOException where
   pretty = text . show
 
 instance Pretty TypeRep where
-  pretty = text . show
+  pretty tr =
+    let tc = typeRepTyCon tr in
+      text . toLText $ tyConModule tc  <> "." <> tyConName tc
 
 instance Pretty NominalDiffTime where
   pretty = text . show

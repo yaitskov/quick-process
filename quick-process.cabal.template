@@ -139,6 +139,7 @@ library
     , generic-random          < 2
     , monad-time              < 1
     , mtl                     < 3
+    , multi-containers        < 1
     , pretty-simple           < 5
     , process                 < 2
     , refined-internal
