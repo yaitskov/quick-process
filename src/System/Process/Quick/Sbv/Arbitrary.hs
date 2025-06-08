@@ -1,10 +1,8 @@
 module System.Process.Quick.Sbv.Arbitrary where
 
 import System.Process.Quick.Prelude
-import Data.SBV -- (Satisfiable, SymVal, Modelable (..), SString, sat, (.==), (.&&), literal)
+import Data.SBV
 import Data.SBV.String qualified as S
--- import Data.SBV.Control qualified as C
-import System.IO.Unsafe (unsafePerformIO)
 import Data.SBV.RegExp
 
 getSingleValue :: (SymVal b, Modelable m) => m -> Maybe b
@@ -15,7 +13,6 @@ getSingleValue m
       _ -> Nothing
   | otherwise = Nothing
 
--- models
 satOne :: (Satisfiable a, SymVal b) => Int -> a -> Maybe b
 satOne _n p = unsafePerformIO (getSingleValue <$> sat p)
 
@@ -23,12 +20,6 @@ satN :: (Satisfiable a, SymVal b) => Int -> a -> [b]
 satN n p = unsafePerformIO (mapMaybe getSingleValue . allSatResults <$> asat)
   where
     asat = allSatWith defaultSMTCfg { allSatMaxModelCount = Just n } p
-
--- satStateless :: SymVal a => Int -> a -> Symbolic (Either String b)
--- satStateless seed p = unsafePerformIO go
---   where
---     solve ::
---     go = runSMT solve
 
 findStringByRegex :: (SymVal b) => RegExp -> Gen b
 findStringByRegex r = go (3 :: Int)

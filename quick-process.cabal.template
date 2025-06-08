@@ -112,6 +112,7 @@ library
     System.Process.Quick.CallSpec.Subcases
     System.Process.Quick.CallSpec.Type
     System.Process.Quick.CallSpec.Verify
+    System.Process.Quick.CallSpec.Verify.ImportOverlook
     System.Process.Quick.CallSpec.Verify.Sandbox
     System.Process.Quick.CallSpec.Verify.TrailingHelp
     System.Process.Quick.CallSpec.Verify.Type

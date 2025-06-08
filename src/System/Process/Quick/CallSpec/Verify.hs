@@ -5,7 +5,7 @@ import Data.Map qualified as M
 import Data.Multimap.Table (row, rowKeys, rowKeysSet)
 import Data.Set (findMin)
 import Data.Text.Lazy qualified as LT
-import Data.Typeable ( TypeRep )
+import System.Process.Quick.CallSpec.Verify.ImportOverlook
 import Language.Haskell.TH.Syntax
 import System.Process.Quick.CallSpec
 import System.Process.Quick.CallSpec.Verify.Sandbox
@@ -115,7 +115,10 @@ discoverAndVerifyCallSpecs activeVerMethods iterations = do
   outArgLocators <- extractInstanceType <$> reifyInstances ''RefinedOutArgLocator [VarT (mkName "c")]
   when (outArgLocators == []) $ putStrLn "Discovered 0 OutArg locators!!!"
   ts <- extractInstanceType <$> reifyInstances ''CallSpec [VarT (mkName "a")]
-  when (ts == []) $ putStrLn "Discovered 0 types with CallSpec instance!!!"
+  when (ts == []) $ fail "Discovered 0 types with CallSpec instance!!!"
+  overlookedCss <- verifyFoundCsCoverCompiledOnes ts
+  when (overlookedCss /= mempty) . fail . toString . displayT . renderOneLine $
+    "Overlooked CallSpecs: " <> pretty overlookedCss
   !r <- [| void $ runStateT (
              fmap concat
                (sequence $(ListE <$> (mapM (genCsVerification

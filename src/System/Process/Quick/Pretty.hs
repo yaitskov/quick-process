@@ -19,6 +19,8 @@ import GHC.ResponseFile (escapeArgs)
 import Relude
 import Text.PrettyPrint.Leijen.Text as PP hiding ((<$>), bool, group, hsep, vsep, empty, isEmpty)
 import Text.PrettyPrint.Leijen.Text qualified as PP
+import Language.Haskell.TH qualified as TH
+-- import Language.Haskell.TH.Syntax (Type (..))
 
 infixr 5 $$
 ($$) :: Doc -> Doc -> Doc
@@ -72,6 +74,15 @@ instance Pretty TypeRep where
   pretty tr =
     let tc = typeRepTyCon tr in
       text . toLText $ tyConModule tc  <> "." <> tyConName tc
+
+instance Pretty TH.Type where
+  pretty = \case
+    TH.ConT tn ->
+      text . toLText . maybe (TH.nameBase tn) (<> "." <> TH.nameBase tn) $ TH.nameModule tn
+    o -> text $ show o
+
+instance Pretty a => Pretty (Set a) where
+  pretty x = "{" <+> hsep (toList x) <+> "}"
 
 instance Pretty NominalDiffTime where
   pretty = text . show

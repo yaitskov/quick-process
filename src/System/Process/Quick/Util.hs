@@ -19,3 +19,7 @@ callProcessSilently p args =
       pure . Just $ "Command: [" <> doc p <> " " <> hsep (escArg <$> args) <> "]" $$
       (if ec > 1 then "Exited with: " <> show ec $$ "" else "")
       <> out &! (("Output: " <+>) . tab) <> err &! (("StdErr: " <+>) . tab)
+
+joinNe :: [a] -> a -> [a] -> [a]
+joinNe _ _ [] = []
+joinNe p d s = p <> [d] <> s

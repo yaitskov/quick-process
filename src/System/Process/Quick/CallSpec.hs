@@ -15,9 +15,11 @@ import Language.Haskell.TH.Syntax qualified as THS
 import System.Directory
 import System.Process.Quick.CallArgument
 import System.Process.Quick.CallSpec.Type as E
+import System.Process.Quick.CallSpec.Verify.ImportOverlook
 import System.Process.Quick.Prelude
 import Text.Casing
 import Text.Regex
+import System.Process.Quick.Util
 
 type FoldrConstr l a = (HFoldr (Mapcar (Fun CallArgumentGen (QR a))) [QR a] l [QR a])
 
@@ -72,10 +74,13 @@ genCallSpec ::
   [VerificationMethod] -> String -> HList l -> Q [Dec]
 genCallSpec verMethods progName l = do
   runIO . whenNothingM_ (findExecutable progName) . fail $ "Program " <> show progName <> " is not found"
-  maybe err (g . mkName') (programNameToHsIdentifier progName)
+  pkgName <- loc_module <$> location
+  addCompiledCallSpec (ConT . mkName . joinNe pkgName '.' $ toList csBaseName)
+  go $ mkName' csBaseName
   where
-    err = fail $ "Call spec name is bad: " <> show progName <> " " <> show l
-    g recName = do
+    csBaseName = maybe err id (programNameToHsIdentifier progName)
+    err = error $ "Call spec name is bad: " <> show progName <> " " <> show l
+    go recName = do
       (a, w) <- runWriterT . unQR $ sequence
         [ genCallArgsRecord recName l
         , genCallSpecInstance verMethods recName progName l

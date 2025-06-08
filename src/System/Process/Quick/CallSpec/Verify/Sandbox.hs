@@ -1,6 +1,5 @@
 module System.Process.Quick.CallSpec.Verify.Sandbox where
 
-import Control.Monad.Writer.Strict (execWriterT, WriterT)
 import Data.Conduit (runConduitRes, (.|))
 import Data.Conduit.Find as F
 import Data.Conduit.List qualified as DCL

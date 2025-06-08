@@ -5,7 +5,6 @@ import System.Process.Quick.Predicate
 import System.Process.Quick.Predicate.InFile ( genFilePathBy )
 import System.Process.Quick.Prelude
 import Text.Regex.TDFA ((=~))
-import Type.Reflection ((:~:)(Refl))
 
 data InDir deriving (Data, Show, Eq, Generic)
 

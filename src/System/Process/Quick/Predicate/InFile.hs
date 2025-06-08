@@ -1,6 +1,5 @@
 module System.Process.Quick.Predicate.InFile where
 
-import Control.Monad.Writer.Strict
 import System.Process.Quick.Predicate
 import System.Process.Quick.Prelude
 import System.Process.Quick.TdfaToSbvRegex as P
@@ -8,7 +7,6 @@ import System.Process.Quick.Sbv.Arbitrary
 import System.Process.Quick.CallArgument (NeList)
 import Text.Regex.TDFA ((=~))
 import Type.Reflection qualified as R
-import Type.Reflection ((:~:)(Refl))
 
 
 data InFile (ext :: Symbol) deriving (Data, Show, Eq, Generic)

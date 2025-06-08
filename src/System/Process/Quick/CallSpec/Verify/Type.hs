@@ -2,7 +2,6 @@
 module System.Process.Quick.CallSpec.Verify.Type where
 
 import Data.Multimap.Table ( Table )
-import Data.Typeable ( TypeRep )
 import Generic.Data ( gmappend, gmempty )
 import Prelude (show)
 import System.Process.Quick.CallEffect (CallEffect)
