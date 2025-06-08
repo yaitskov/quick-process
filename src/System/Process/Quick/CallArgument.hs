@@ -1,4 +1,3 @@
-
 module System.Process.Quick.CallArgument where
 
 import Control.Monad.Writer.Strict
@@ -75,6 +74,12 @@ newtype ConstArg = ConstArg String deriving (Eq, Show)
 instance CallArgumentGen ConstArg where
   cArgName _ = Nothing
   progArgExpr (ConstArg c) = [| const [ $(stringE c)] |]
+  fieldExpr _ = pure Nothing
+
+newtype ConstArgs = ConstArgs [String] deriving (Eq, Show)
+instance CallArgumentGen ConstArgs where
+  cArgName _ = Nothing
+  progArgExpr (ConstArgs cs) = [| const $(TH.lift cs) |]
   fieldExpr _ = pure Nothing
 
 defaultBang :: Bang
