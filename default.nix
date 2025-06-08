@@ -20,6 +20,11 @@ let
       propagatedBuildInputs = (oa.propagatedBuildInputs or []) ++ [pkgs.z3];
     });
 
+  importGit = drv:
+    drv.overrideAttrs (oa: {
+      buildInputs = (oa.buildInputs or []) ++ [pkgs.git];
+    });
+
   sources = [
     "^(trace-embrace.yaml|src|test).*$"
     "^(sandbox-effect|verify-call-specs).*"
@@ -29,7 +34,7 @@ let
   ];
 
   base = hsPkgs.callCabal2nix "quick-process" (lib.sourceByRegex ./. sources) { };
-  quick-process-overlay = _hf: _hp: { quick-process = importZ3 base; };
+  quick-process-overlay = _hf: _hp: { quick-process = importGit (importZ3 base); };
   baseHaskellPkgs = pkgs.haskell.packages.${ghc};
   hsOverlays = [ hsPkgSetOverlay quick-process-overlay ];
   hsPkgs = baseHaskellPkgs.override (old: {
@@ -50,6 +55,7 @@ let
       niv
       pandoc
       z3
+      git
     ]) ++ [ hls hsPkgs.upload-doc-to-hackage ];
     shellHook = ''
       export PS1='$ '
