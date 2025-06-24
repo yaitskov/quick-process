@@ -1,10 +1,4 @@
 {
-    "HList": {
-        "branch": "master",
-        "repo": "https://bitbucket.org/HList/hlist",
-        "rev": "e688f11d7432c812c2b238464401a86f588f81e1",
-        "type": "git"
-    },
     "nixpkgs": {
         "branch": "master",
         "owner": "NixOS",

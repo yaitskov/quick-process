@@ -1,10 +1,4 @@
 {
-  "HList": {
-    "branch": "master",
-    "repo": "file:///home/dan/pro/haskell/hlist",
-    "rev": "e688f11d7432c812c2b238464401a86f588f81e1",
-    "type": "git"
-  },
   "nixpkgs": {
     "branch": "master",
     "repo": "/home/dan/pro/nixpkgs",

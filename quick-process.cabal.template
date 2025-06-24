@@ -37,13 +37,82 @@ common base
     OverloadedStrings
     TemplateHaskell
   build-depends:
-      HList >= 0.5.4.0 && < 1
-    , QuickCheck >= 2.14.3 && < 3
-    , base >=4 && < 5
+      QuickCheck >= 2.14.3 && < 3
+    , base >=4.7 && < 5
     , bytestring >= 0.12.1 && < 1
     , generic-lens >= 2.2.2 && < 3
     , lens >= 5.3.2 && < 6
     , relude >= 1.2.2 && < 2
+
+library hlist-internal
+  hs-source-dirs: hlist
+  Build-Depends:       base >= 4.7 && < 5,
+                       -- for Typeable '[] and '(:) with ghc-7.6
+                       base-orphans,
+                       template-haskell,
+                       ghc-prim,
+                       mtl,
+                       tagged,
+                       profunctors,
+                       array
+  Exposed-modules:     Data.HList,
+                       Data.HList.CommonMain,
+                       Data.HList.Data,
+                       Data.HList.Dredge,
+                       Data.HList.FakePrelude,
+                       Data.HList.HArray,
+                       Data.HList.HCurry,
+                       Data.HList.HList,
+                       Data.HList.HListPrelude,
+                       Data.HList.HOccurs,
+                       Data.HList.HTypeIndexed,
+                       Data.HList.HSort,
+                       Data.HList.HZip,
+                       Data.HList.Keyword,
+                       Data.HList.Label3,
+                       Data.HList.Label5,
+                       Data.HList.Label6,
+                       Data.HList.Labelable,
+                       Data.HList.MakeLabels,
+                       Data.HList.Record,
+                       Data.HList.RecordPuns,
+                       Data.HList.RecordU,
+                       Data.HList.TIC,
+                       Data.HList.TIP,
+                       Data.HList.TIPtuple,
+                       Data.HList.TypeEqO,
+                       Data.HList.Variant
+  Other-modules:       LensDefs
+  Default-Language:    Haskell2010
+  Ghc-Options:         -Wall -fno-warn-missing-signatures
+                       -fno-warn-orphans
+                       -fno-warn-unticked-promoted-constructors
+                       -Wno-star-is-type
+  Default-Extensions:  ConstraintKinds
+                       DataKinds
+                       DeriveDataTypeable
+                       EmptyDataDecls
+                       FlexibleContexts
+                       FlexibleInstances
+                       FunctionalDependencies
+                       GeneralizedNewtypeDeriving
+                       GADTs
+                       KindSignatures
+                       MultiParamTypeClasses
+                       PolyKinds
+                       RankNTypes
+                       ScopedTypeVariables
+                       StandaloneDeriving
+                       TypeFamilies
+                       TypeOperators
+                       UndecidableInstances
+                       StarIsType
+                       UndecidableSuperClasses
+                       AllowAmbiguousTypes
+                       RoleAnnotations
+  Other-Extensions:    CPP
+                       TemplateHaskell
+                       OverlappingInstances
 
 library multi-containers-internal
   hs-source-dirs: multi-containers
@@ -149,6 +218,7 @@ library
     , generic-data            < 2
     , generic-deriving        < 2
     , generic-random          < 2
+    , hlist-internal
     , monad-time              < 1
     , mtl                     < 3
     , multi-containers-internal
@@ -177,7 +247,9 @@ test-suite verify-call-specs
   hs-source-dirs:
     verify-call-specs
   ghc-options: -Wall -rtsopts -threaded -main-is VerifyCallSpecs
-  build-depends: quick-process
+  build-depends:
+      quick-process
+    , hlist-internal
 
 test-suite sandbox-effect
   import: base
@@ -196,6 +268,7 @@ test-suite sandbox-effect
   ghc-options: -Wall -rtsopts -threaded -main-is SandBoxEffect
   build-depends:
       quick-process
+    , hlist-internal
     , refined-internal
 
 test-suite test
@@ -218,6 +291,7 @@ test-suite test
   ghc-options: -Wall -rtsopts -threaded -main-is Driver
   build-depends:
       directory
+    , hlist-internal
     , quickcheck-instances
     , refined-internal
     , th-utilities
