@@ -5,12 +5,6 @@
     "rev": "e688f11d7432c812c2b238464401a86f588f81e1",
     "type": "git"
   },
-  "multi-containers": {
-    "branch": "master",
-    "repo": "file:///home/dan/pro/haskell/multi-containers",
-    "rev": "e85bf9eec49082f7bee4f83c9300739b3a2a6052",
-    "type": "git"
-  },
   "nixpkgs": {
     "branch": "master",
     "repo": "/home/dan/pro/nixpkgs",

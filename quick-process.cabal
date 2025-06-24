@@ -256,6 +256,17 @@ common base
     , lens >= 5.3.2 && < 6
     , relude >= 1.2.2 && < 2
 
+library multi-containers-internal
+  hs-source-dirs: multi-containers
+  exposed-modules:
+    Data.Multimap.Table
+    Data.Multimap.Table.Internal
+  build-depends:
+      base >=4.7 && <5
+    , containers >=0.5.10.2 && <0.8
+  default-language: Haskell2010
+  ghc-options: -Wall
+
 -- https://github.com/erikd/conduit-find/pull/17
 library conduit-find-internal
   import: base
@@ -351,7 +362,7 @@ library
     , generic-random          < 2
     , monad-time              < 1
     , mtl                     < 3
-    , multi-containers        < 1
+    , multi-containers-internal
     , pretty-simple           < 5
     , process                 < 2
     , refined-internal

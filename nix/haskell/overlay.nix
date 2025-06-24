@@ -15,7 +15,6 @@ in hfinal: hprev:
   nameValuePair a.name
     (dontCheck (hfinal.callCabal2nix a.name a.source { }))) [
       { name = "HList"; source = sources.HList; }
-      { name = "multi-containers"; source = sources.multi-containers; }
     ])) // {
       "upload-doc-to-hackage" = hfinal.callPackage sources.upload-doc-to-hackage {};
 
