@@ -28,7 +28,7 @@ let
   sources = [
     "^(trace-embrace.yaml|src|test).*$"
     "^(sandbox-effect|verify-call-specs).*"
-    "^(refined|conduit-find).*"
+    "^(hlist|multi-containers|refined|conduit-find).*"
     "^changelog[.]md$"
     "^.*\\.cabal$"
   ];
