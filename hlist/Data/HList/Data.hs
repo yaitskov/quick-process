@@ -128,7 +128,7 @@ type DataHListFlatCxt na g a = (
 type family FoldRArrow (xs :: [*]) (r :: *)
 
 type instance FoldRArrow '[] r = r
-type instance FoldRArrow (x ': xs) r = x -> FoldRArrow xs r 
+type instance FoldRArrow (x ': xs) r = x -> FoldRArrow xs r
 
 
 instance DataHListFlatCxt na g a => Data (HListFlat a) where
@@ -238,69 +238,6 @@ instance (RecordLabelsStr2 xs,
 -- 'gfoldl'.
 data C a
 
--- typeable isntances... either hand written or derived when possible
-#if !OLD_TYPEABLE
-deriving instance Typeable Record
-deriving instance Typeable HList
-deriving instance Typeable HListFlat
-deriving instance Typeable Variant
-deriving instance Typeable TIC
-deriving instance Typeable TIP
-
--- orphans
-deriving instance Typeable 'HZero
-deriving instance Typeable 'HSucc
-
-#else
-instance TypeRepsList (Record xs) => Typeable (HList xs) where
-   typeOf x = mkTyConApp (mkTyCon3 "HList" "Data.HList.HList" "HList")
-                [ tyConList (typeRepsList (Record x)) ]
-
-instance (TypeRepsList (Record xs)) => Typeable (Record xs) where
-  typeOf x = mkTyConApp (mkTyCon3 "HList" "Data.HList.Record" "Record")
-                [ tyConList (typeRepsList x) ]
-
-instance TypeRepsList (Record xs) => Typeable (Variant xs) where
-  typeOf _ = mkTyConApp (mkTyCon3 "HList" "Data.HList.Variant" "Variant")
-                [ tyConList (typeRepsList (error "Data.HList.Data:Typeable Variant" :: Record xs)) ]
-
-instance Typeable (Variant xs) => Typeable (TIC xs) where
-  typeOf (TIC xs) = mkTyConApp (mkTyCon3 "HList" "Data.HList.TIC" "TIC")
-                      [typeOf xs]
-
-instance Typeable (HList xs) => Typeable (TIP xs) where
-  typeOf (TIP xs) = mkTyConApp (mkTyCon3 "HList" "Data.HList.TIP" "TIP")
-                      [typeOf xs]
-
-instance ShowLabel sy => Typeable1 (Tagged sy) where
-  typeOf1 _ = mkTyConApp
-        (mkTyCon3 "HList" "Data.HList.Data" (showLabel (Label :: Label sy)))
-        []
-
-instance (ShowLabel sy, Typeable x) => Typeable (Tagged sy x) where
-  typeOf _ = mkTyConApp
-            (mkTyCon3 "GHC" "GHC.TypeLits" (showLabel (Label :: Label sy)))
-            [mkTyConApp (mkTyCon3 "HList" "Data.HList.Record" "=") [],
-                    typeOf (error "Data.HList.Data:Typeable Tagged" :: x)
-                    ]
-
-
-instance Typeable (HList a) => Typeable (HListFlat a) where
-    typeOf _ = mkTyConApp (mkTyCon3 "HList" "Data.HList.Data" "HListFlat")
-            [typeOf (error "Typeable HListFlat" :: HList a)]
-
--- pretty-prints sort of like a real list
-tyConList xs = mkTyConApp open ( intersperse comma xs ++ [close] )
-    where
-    open = mkTyCon3 "GHC" "GHC.TypeLits" "["
-    close = mkTyConApp (mkTyCon3 "GHC" "GHC.TypeLits" "]") []
-    comma = mkTyConApp (mkTyCon3 "GHC" "GHC.TypeLits" ",") []
-#endif
-
-
-
-
-
 class TypeRepsList a where
   typeRepsList :: a -> [TypeRep]
 
@@ -332,5 +269,3 @@ data GunfoldK c where
 instance (Data b, x ~ (t, c (b -> r)), y ~ c r) =>
         ApplyAB (GunfoldK c) x y where
     applyAB (GunfoldK f) (_, u) = f u
-
-
