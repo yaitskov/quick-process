@@ -289,13 +289,13 @@ library hlist-internal
   hs-source-dirs: hlist
   Build-Depends:       base >= 4.7 && < 5,
                        -- for Typeable '[] and '(:) with ghc-7.6
-                       base-orphans,
-                       template-haskell,
-                       ghc-prim,
-                       mtl,
-                       tagged,
-                       profunctors,
-                       array
+                       base-orphans < 1,
+                       template-haskell < 3,
+                       ghc-prim < 0.16,
+                       mtl  >= 2.3.1 && < 3,
+                       tagged < 1,
+                       profunctors >= 5.6.2 && < 6,
+                       array < 1
   Exposed-modules:     Data.HList,
                        Data.HList.CommonMain,
                        Data.HList.Data,
