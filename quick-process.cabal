@@ -1,6 +1,6 @@
 cabal-version: 3.0
 name:          quick-process
-version:       0.0.2
+version:       0.0.3
 synopsis:      Run external processes verified at compilation/installation
 description:
     The library checks program name during compilation, generates exec spec
