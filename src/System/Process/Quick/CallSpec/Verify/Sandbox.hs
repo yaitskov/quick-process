@@ -63,15 +63,41 @@ validateInSandbox ::
   forall w m cs. (M m, CallSpec cs, WriterT [FilePath] (CsPerfT m) ~ w) =>
   ArgCollector w ->
   ArgCollector w ->
-  Proxy cs ->
+  (IO cs) ->
   Int ->
   CsPerfT m (Maybe CsViolationWithCtx)
-validateInSandbox inArgLocators outArgLocators pcs !iterations
+validateInSandbox inArgLocators outArgLocators mkCs !iterations
   | iterations <= 0 = pure Nothing
   | otherwise =
-    withSystemTempDirectory "quick-process" go >>= \case
-      Nothing -> validateInSandbox inArgLocators outArgLocators pcs $ iterations - 1
-      Just e -> pure $ Just e
+      withSystemTempDirectory "quick-process" go >>= \case
+        Nothing -> validateInSandbox inArgLocators outArgLocators mkCs $ iterations - 1
+        Just e -> pure $ Just e
+  where
+    validateInit cs projectDir (CsBox h:initCss)
+      = validateInSandboxOne projectDir inArgLocators outArgLocators (pure h) >>= \case
+          Nothing -> validateInit cs projectDir initCss
+          Just e -> pure $ Just e
+    validateInit cs projectDir []
+      = validateInSandboxOne projectDir inArgLocators outArgLocators (pure cs)
+    doIn projectDir () = do
+      cs <- liftIO mkCs
+      validateInit cs projectDir =<< initCallSpecs cs
+    go tdp = do
+      projectDir <- liftIO getCurrentDirectory
+      bracket
+        (liftIO $ setCurrentDirectory tdp)
+        (\() -> liftIO $ setCurrentDirectory projectDir)
+        (doIn projectDir)
+
+
+validateInSandboxOne ::
+  forall w m cs. (M m, CallSpec cs, WriterT [FilePath] (CsPerfT m) ~ w) =>
+  FilePath ->
+  ArgCollector w ->
+  ArgCollector w ->
+  (IO cs) ->
+  CsPerfT m (Maybe CsViolationWithCtx)
+validateInSandboxOne projectDir inArgLocators outArgLocators mkCs = doIn
   where
     checkFilesExist cs outFiles = do
       filterM (pure . not <=< doesFileExist) outFiles >>= \case
@@ -81,7 +107,7 @@ validateInSandbox inArgLocators outArgLocators pcs !iterations
           [ FsEffect . FsAnd $ fmap (FsNot . flip FsPathPredicate [FsExists]) ne
           ]
 
-    findOriginFor projectDir inFile = do
+    findOriginFor inFile = do
       xs :: [FilePath] <- runConduitRes $
         F.find projectDir (do ignoreVcs
                               glob $ "*" <> takeExtension inFile
@@ -91,18 +117,19 @@ validateInSandbox inArgLocators outArgLocators pcs !iterations
         [] -> pure Nothing
         neXs -> Just <$> generate (elements neXs)
 
-    genInputFile projectDir inFile = (fromMaybe "/etc/hosts" <$> findOriginFor projectDir inFile) >>=
+    genInputFile inFile = (fromMaybe "/etc/hosts" <$> findOriginFor inFile) >>=
       \origin -> createDirectoryIfMissing True (takeDirectory inFile) >>
                  copyFile origin inFile
                  -- putStrLn ("File "  <> show origin <> " => " <> show inFile)
 
-    doIn projectDir () = do
-      cs <- measureX pcs SandboxValidate #csGenerationTime (liftIO (generate (arbitrary @cs)))
+    doIn = do
+      let pcs = Proxy @cs
+      cs <- measureX pcs SandboxValidate #csGenerationTime (liftIO mkCs)
       inFiles <- execWriterT (gmapM inArgLocators cs)
       -- absolute path is an issue for generator
       -- though process in docker is run under root - high chance to pass ;)
       -- quick hack is to use  odd size in Gen to avoid absolute path it Sandbox mode
-      mapM_ (liftIO1 (genInputFile projectDir)) inFiles
+      mapM_ (liftIO1 genInputFile) inFiles
       let nocs = normalizeOutcomeChecks cs
       tryIO (measureX pcs SandboxValidate #csExeTime $ callProcessAndReport cs) >>= \case
         Left e -> throw . CsViolationWithCtx cs . ExceptionThrown $ SomeException e
@@ -112,9 +139,3 @@ validateInSandbox inArgLocators outArgLocators pcs !iterations
               outFiles <- execWriterT (gmapM outArgLocators cs)
               liftIO (checkFilesExist cs outFiles)
             cfs -> pure . Just . CsViolationWithCtx cs $ UnexpectedCallEffect cfs
-    go tdp = do
-      projectDir <- liftIO getCurrentDirectory
-      bracket
-        (liftIO $ setCurrentDirectory tdp)
-        (\() -> liftIO $ setCurrentDirectory projectDir)
-        (doIn projectDir)

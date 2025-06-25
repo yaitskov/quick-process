@@ -63,6 +63,8 @@ genCallSpecInstance verMethods recordName progName l =
   , funD' 'verificationMethods [ [p|_|] ] (THS.lift $ sort verMethods)
   , funD' 'outcomeCheckers []
       [| concat . flap $(listE (hMapM (Fun outcomeCheckersExpr :: Fun CallArgumentGen (QR Exp)) l)) |]
+  , funD' 'initCallSpecs []
+      [| fmap concat . sequence . flap $(listE (hMapM (Fun initCallSpecsExpr :: Fun CallArgumentGen (QR Exp)) l)) |]
   ]
 
 mkName' :: NonEmptyStr -> Name

@@ -7,6 +7,7 @@ import CallSpecs.Date
 import CallSpecs.FindCases ()
 import CallSpecs.GitInit ()
 import CallSpecs.GitInitExit1 ()
+import CallSpecs.GitRemote ()
 import CallSpecs.GitSubcases ()
 import System.Process.Quick
 import System.Process.Quick.Prelude

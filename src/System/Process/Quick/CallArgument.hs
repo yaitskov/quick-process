@@ -63,24 +63,29 @@ class (Typeable a) => CallArgumentGen a where
   -- | Exp type is '\v -> [OutcomeChecker]'
   outcomeCheckersExpr :: a -> QR Exp
   outcomeCheckersExpr _ = [| const [] |]
+  -- | Exp type is '\v -> m [CsBox]'
+  initCallSpecsExpr :: a -> QR Exp
 
 instance CallArgumentGen OutcomeChecker where
   cArgName _ = Nothing
   progArgExpr _ = [| const [] |]
   fieldExpr _ = pure Nothing
   outcomeCheckersExpr c =  [| pure [$(TH.lift c)] |]
+  initCallSpecsExpr _ = [| pure . const [] |]
 
 newtype ConstArg = ConstArg String deriving (Eq, Show)
 instance CallArgumentGen ConstArg where
   cArgName _ = Nothing
   progArgExpr (ConstArg c) = [| const [ $(stringE c)] |]
   fieldExpr _ = pure Nothing
+  initCallSpecsExpr _ = [| pure . const [] |]
 
 newtype ConstArgs = ConstArgs [String] deriving (Eq, Show)
 instance CallArgumentGen ConstArgs where
   cArgName _ = Nothing
   progArgExpr (ConstArgs cs) = [| const $(TH.lift cs) |]
   fieldExpr _ = pure Nothing
+  initCallSpecsExpr _ = [| pure . const [] |]
 
 defaultBang :: Bang
 defaultBang = Bang NoSourceUnpackedness NoSourceStrictness
@@ -124,6 +129,7 @@ instance (Typeable a, CallArgument a) => CallArgumentGen (VarArg a) where
     Just . (mkName $ escapeFieldName fieldName, defaultBang,) <$> atRep
     where
       atRep = QR . lift $ TU.typeRepToType (typeRep (Proxy @a))
+  initCallSpecsExpr _ = [| pure . const [] |]
 
 -- | Command line argument prefixed with a key
 newtype KeyArg a = KeyArg String deriving (Eq, Show)
@@ -132,3 +138,4 @@ instance (Typeable a, CallArgument a) => CallArgumentGen (KeyArg a) where
   progArgExpr (KeyArg fieldName) =
     [| \x -> $(progArgExpr (ConstArg fieldName)) x <> $(progArgExpr (VarArg @a fieldName)) x |]
   fieldExpr (KeyArg fieldName) = fieldExpr (VarArg @a fieldName)
+  initCallSpecsExpr _ = [| pure . const [] |]

@@ -1,6 +1,7 @@
 -- {-# OPTIONS_GHC -ddump-splices #-}
 module CallSpecs.GitSubcases where
 
+import CallSpecs.GitInit qualified as I
 import Data.String qualified as S
 import System.Process.Quick
 import System.Process.Quick.Prelude
@@ -8,13 +9,13 @@ import System.Process.Quick.Prelude
 $(genCallSpec
   [TrailingHelpValidate, SandboxValidate]
   "git"
-  (   ConstArgs (S.words "-c init.defaultBranch=master")
-  .*. Subcases "GitInit"
+  (   ConstArgs (S.words "--no-pager --no-replace-objects")
+  .*. Subcases "GitSubCases"
       [ Subcase "Success"
-        (   ConstArg "init"
+        (   ConstArg "reset"
         .*. StdErrMatches "^$"
-        .*. StdOutMatches "^Initialized empty Git repository"
-        .*. DirCreated ".git"
+        .*. StdOutMatches "^$"
+        .*. Init @I.Git
         .*. HNil
         )
       , Subcase "Fail"

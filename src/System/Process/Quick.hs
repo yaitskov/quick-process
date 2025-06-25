@@ -5,6 +5,7 @@ import Refined as M
 import System.Process.Quick.CallArgument as M
 import System.Process.Quick.CallEffect as M
 import System.Process.Quick.CallSpec as M
+import System.Process.Quick.CallSpec.Init as M
 import System.Process.Quick.CallSpec.Run as M
 import System.Process.Quick.CallSpec.Subcases as M
 import System.Process.Quick.CallSpec.Verify as M

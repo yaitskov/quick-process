@@ -399,6 +399,7 @@ library
     System.Process.Quick.CallEffect
     System.Process.Quick.CallArgument
     System.Process.Quick.CallSpec
+    System.Process.Quick.CallSpec.Init
     System.Process.Quick.CallSpec.Run
     System.Process.Quick.CallSpec.Subcases
     System.Process.Quick.CallSpec.Type
@@ -473,6 +474,7 @@ test-suite sandbox-effect
     CallSpecs.FindCases
     CallSpecs.GitInit
     CallSpecs.GitInitExit1
+    CallSpecs.GitRemote
     CallSpecs.GitSubcases
   hs-source-dirs:
     sandbox-effect

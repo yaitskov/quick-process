@@ -38,7 +38,7 @@ verifyWithActiveMethods inArgLocators outArgLocators activeVerMethods pcs iterat
           P.lift (verifyTrailingHelp pcs iterations)
       SandboxValidate ->
         measureX pcs SandboxValidate #csTotalTime $
-          validateInSandbox inArgLocators outArgLocators pcs iterations
+          validateInSandbox inArgLocators outArgLocators (generate (arbitrary @cs)) iterations
 
 -- |Compose a list of monadic actions into one action.  Composes using
 -- ('>=>') - that is, the output of each action is fed to the input of

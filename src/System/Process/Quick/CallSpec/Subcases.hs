@@ -75,3 +75,14 @@ instance CallArgumentGen Subcases where
           [AsP x (RecP (mkName dcName) [])]
           (NormalB (AppE f (VarE x)))
           []
+  initCallSpecsExpr (Subcases (TcName tyCon) cases) = do
+    [| $(lamCasesE (subcaseToClause' <$> cases)) . $(varE . mkName $ mapFirst toLower tyCon) |]
+    where
+      subcaseToClause' :: Subcase -> QR Clause
+      subcaseToClause' (Subcase (DcName dcName) l) = do
+        x <- newName "x"
+        f <- [| fmap concat . sequence . flap $(listE (hMapM (Fun initCallSpecsExpr :: Fun CallArgumentGen (QR Exp)) l)) |]
+        pure $ Clause
+          [AsP x (RecP (mkName dcName) [])]
+          (NormalB (AppE f (VarE x)))
+          []
