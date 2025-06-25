@@ -226,7 +226,7 @@ $(genCallSpec
         [ Subcase "FindPrintf"
           (KeyArg @(Refined (Regex "^[%][fpactbnM%]$") String) "-printf" .*. HNil)
         , Subcase "FindExec"
-          (KeyArg @(Refined (Regex "^(ls|file|du)$") String) "-exec" .*. ConstArg "{}" .*. ConstArg ";" .*. HNil)
+          (KeyArg @(Refined (Regex "^(ls|file|du)$") String) "-exec" .*. ConstArgs (words "{} ;") .*. HNil)
         ]
   .*. HNil
   )
@@ -236,3 +236,37 @@ $(genCallSpec
 Note usage of `Regex` predicate - thanks to
 [sbv](https://hackage.haskell.org/package/refined) and z3 SMT solver
 values satisfing arbitrary TDFA regex can be generated.
+
+
+### Init Cascade
+
+A call spec may require another command to be executed somewhere in
+the past e.g. most of git commands work only with initialize
+repository.
+
+```haskell
+{-# LANGUAGE TemplateHaskell #-}
+module CallSpecs where
+
+import CallSpecs.GitInit qualified as I
+import System.Process.Quick
+
+$(genCallSpec
+  [SandboxValidate]
+  "git"
+  (   ConstArg "remote"
+  .*. StdErrMatches "^$"
+  .*. StdOutMatches "^$"
+  .*. Init @I.Git
+  .*. HNil
+  )
+ )
+```
+
+## Generated TH code inspection
+
+GHC prints generated TH code with pragma:
+
+``` haskell
+{-# OPTIONS_GHC -ddump-splices #-}
+```
